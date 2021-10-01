@@ -19,4 +19,4 @@ def output(state):
   o = [[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.floor(h) - h]]
 
 for s in S:
-    O[s] = output(s)
+    O[tuple(s)] = output(s)
