@@ -21,26 +21,19 @@ Rs_loc = list(zip(*np.where(grid == 'S')))[0]
 
 state = [0, 2]
 
-# def moveToNextState(action):
-#     global state
-#     actions = P[tuple(state)]
-
-#     transition = actions[action]
-#     states = transition.keys()
-#     next_state = np.random.choice(list(states), p=list(transition.values()))
-#     print(f'Next state: {next_state}, Probability of reaching this state: {transition[next_state]}')
-#     state = next_state
-#     print(f'Output: {O[tuple(state)]}')
-#     drawGridworld()
-
 def moveToNextState(action):
     global state
-    next_state = np.add(state, action)
-    print(f'Next state: {next_state}')
+    actions = P[tuple(state)]
+
+    transition = actions[action]
+    states = list(transition.keys())
+    next_state_idx = np.random.choice(np.arange(len(states)), p=list(transition.values()))
+    next_state = states[next_state_idx]
+    print(f'Next state: {next_state}, Probability of reaching this state: {transition[next_state]}')
     state = next_state
     # print(f'Output: {O[tuple(state)]}')
     drawGridworld()
-    
+
 def drawGridworld(wall_char='X', state_char='O'):
     for i in range(len(grid)):
         row = '|'
@@ -86,5 +79,6 @@ listener = keyboard.Listener(on_press=takeAction)
 listener.start()
 
 if __name__ == '__main__':
+    drawGridworld()
     while not quitKey:
         time.sleep(1)
