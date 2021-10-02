@@ -31,7 +31,7 @@ def moveToNextState(action):
     next_state = states[next_state_idx]
     print(f'Next state: {next_state}, Probability of reaching this state: {transition[next_state]}')
     state = next_state
-    # print(f'Output: {O[tuple(state)]}')
+    print(f'Output: {O[tuple(state)]}')
     drawGridworld()
 
 def drawGridworld(wall_char='X', state_char='O'):

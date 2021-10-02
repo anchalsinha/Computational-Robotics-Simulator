@@ -20,13 +20,15 @@ O = {}
 Rd_loc = [2, 2]
 Rs_loc = [4, 2]
 def output(state):
-    dD = np.linalg.norm(state - Rd_loc)
-    dS = np.linalg.norm(state - Rs_loc)
+    dD = np.linalg.norm(np.subtract(state, Rd_loc))
+    dS = np.linalg.norm(np.subtract(state, Rs_loc))
     h = 2/((1/dD) + (1/dS))
-    o = [[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.floor(h) - h]]
+    o = [[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.ceil(h) - h]]
+    return o
 
-# for s in S:
-#     O[s] = output(s)
+for s in S:
+    O[s] = output(s)
+
 transition_matrix = {}
 
 def possible_jumps(present_state):
@@ -54,18 +56,13 @@ def transition_matrix():
             desired_state = tuple(np.add(s, a))
             invalid = tuple(desired_state) not in list_possible_jumps # check if desired state is invalid
 
-            print(f'State: {s}, Action: {a}, Desired: {desired_state}, all: {list_possible_jumps}')
-
             for s_ in S:
                 if invalid and s_ == s: # if invalid desired state and s_ is current state
-                    print('Case 1')
                     s_dict[s_] = 1
                 elif not invalid and desired_state == s_: # if not invalid desired state and s_ is desired state
                     s_dict[s_] = float(1-Pe)
-                    print('Case 2')
                 elif not invalid and s_ in list_possible_jumps: # if not invalid desired state and s_ is valid
                     s_dict[s_] = Pe/(len(list_possible_jumps)-1)
-                    print('Case 3')
                 else:
                     s_dict[s_] = 0
             a_dic[a]= s_dict
