@@ -2,8 +2,6 @@ import numpy as np
 from pynput import keyboard
 import time
 
-from configuration import Environment
-
 class GridworldSimulator:
     def __init__(self, environment, initial_state):
         self.exitProgram = 0
@@ -13,7 +11,10 @@ class GridworldSimulator:
         self.state = initial_state
 
     def run(self):
-        # keyboard listener
+        '''
+        Blocking function to run the simulator
+        '''
+        # keyboard listener in background thread
         listener = keyboard.Listener(on_press=self.takeAction)
         listener.start()
 
@@ -22,6 +23,10 @@ class GridworldSimulator:
             time.sleep(0.2)
     
     def moveToNextState(self, action):
+        '''
+        Given the selected action, randomly choose the next state based on the transition probabilities
+        and change the current state
+        '''
         actions = self.environment.P[tuple(self.state)]
 
         transition = actions[action]
@@ -34,6 +39,9 @@ class GridworldSimulator:
         self.drawGridworld()
 
     def drawGridworld(self, wall_char='X', state_char='O'):
+        '''
+        Draws the current gridworld state in the command window
+        '''
         for i in range(len(self.grid)):
             row = '|'
             for j in range(len(self.grid[0])):
@@ -52,6 +60,9 @@ class GridworldSimulator:
         print('\n\n\n')
 
     def takeAction(self, key):
+        '''
+        Keyboard listener function to select an action based on key input
+        '''
         A = self.environment.A
         if key == keyboard.Key.left:
             action = A[0]
@@ -63,7 +74,7 @@ class GridworldSimulator:
             action = A[3]
         elif key == keyboard.Key.space:
             action = A[4]
-        elif key.char == 'q':
+        elif 'char' in key and key.char == 'q':
             self.exitProgram = 1
             return
         else:

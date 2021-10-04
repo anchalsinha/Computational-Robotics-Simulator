@@ -28,6 +28,10 @@ class Environment:
         return O
 
     def possible_jumps(self, present_state):
+        '''
+        List all possible movements from the current state as to not select a wall or boundary as the 
+        next state.
+        '''
         possible_jumps= []
         for a in self.A:
             jump_y = present_state[0] + a[0]
@@ -38,20 +42,24 @@ class Environment:
         return possible_jumps
 
     def calculate_transition_prob_set(self):
+        '''
+        Calculates the transition probability set. The data type is a triple-nested dictionary to 
+        represent the input triplet (state, action, next state) determining the transition probability
+        '''
         transition_mat = {}
-        for s in self.S:
+        for s in self.S: # current state
             if self.grid[s] == '1':
                 continue
 
             list_possible_jumps = self.possible_jumps(s)
             a_dic ={}
 
-            for a in self.A:
+            for a in self.A: # current action
                 s_dict = {}
                 desired_state = tuple(np.add(s, a))
                 invalid = tuple(desired_state) not in list_possible_jumps # check if desired state is invalid
 
-                for s_ in self.S:
+                for s_ in self.S: # next state
                     if invalid and s_ == s: # if invalid desired state and s_ is current state
                         s_dict[s_] = 1
                     elif not invalid and desired_state == s_: # if not invalid desired state and s_ is desired state
