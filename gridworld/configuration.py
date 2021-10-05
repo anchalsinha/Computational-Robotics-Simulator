@@ -23,7 +23,7 @@ class Environment:
         O = {}
         for state in self.S:
             h = np.mean(np.linalg.norm(np.subtract(self.target_coords, state), axis=1))
-            o = [[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.ceil(h) - h]]
+            o = np.array([[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.ceil(h) - h]])
             O[state] = o
         return O
 
