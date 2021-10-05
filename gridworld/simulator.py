@@ -35,7 +35,10 @@ class GridworldSimulator:
         next_state = states[next_state_idx]
         print(f'Next state: {next_state}, Probability of reaching this state: {transition[next_state]}')
         self.state = next_state
-        print(f'Output: {self.environment.O[tuple(self.state)]}')
+
+        outputs = self.environment.O[tuple(self.state)]
+        output = np.random.choice(outputs[:,0], p=outputs[:,1])
+        print(f'Output: {output}')
         self.drawGridworld()
 
     def drawGridworld(self, wall_char='X', state_char='O'):
