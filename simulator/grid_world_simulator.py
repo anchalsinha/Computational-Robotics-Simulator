@@ -31,24 +31,25 @@ class GridworldSimulator(Simulator):
         Keyboard listener function to select an action based on key input
         '''
         A = self.environment.A
-        if key == keyboard.Key.left:
-            action = A[0]
-        elif key == keyboard.Key.right:
-            action = A[1]
-        elif key == keyboard.Key.up:
-            action = A[2]
-        elif key == keyboard.Key.down:
-            action = A[3]
-        elif key == keyboard.Key.space:
-            action = A[4]
-        elif 'char' in key and key.char == 'q':
-            self.exitProgram = 1
-            return
-        else:
-            print(f'Invalid key pressed: {key}')
-            return
+
+        try:
+            if key == keyboard.Key.left:
+                action = A[0]
+            elif key == keyboard.Key.right:
+                action = A[1]
+            elif key == keyboard.Key.up:
+                action = A[2]
+            elif key == keyboard.Key.down:
+                action = A[3]
+            elif key == keyboard.Key.space:
+                action = A[4]
+            elif key.char == 'q':
+                self.exitProgram = 1
+                return
+            self.nextStep(action)
+        except:
+            pass
         
-        self.nextStep(action)
 
     def run(self):
         '''
