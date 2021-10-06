@@ -4,4 +4,8 @@ import time
 from .base_simulator import Simulator
 
 class NumberlineSimulator(Simulator):
-    pass
+    # TODO: Implement this function
+    def visualize(self):
+        pass
+    def run(self):
+        pass
