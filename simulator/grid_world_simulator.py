@@ -49,9 +49,8 @@ class GridworldSimulator(Simulator):
             self.nextStep(action)
         except:
             pass
-        
 
-    def run(self):
+    def run_manual_input(self):
         '''
         Simulation loop
         '''

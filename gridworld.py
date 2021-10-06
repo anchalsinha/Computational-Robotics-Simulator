@@ -15,4 +15,4 @@ initial_state = (0, 2)
 
 gridworld_environment = GridworldEnvironment(grid, Pe)
 gridworld_simulator = GridworldSimulator(gridworld_environment, initial_state)
-gridworld_simulator.run()
+gridworld_simulator.run_manual_input()
