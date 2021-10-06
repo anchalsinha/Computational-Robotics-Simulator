@@ -1,31 +1,19 @@
 import numpy as np
-from pynput import keyboard
 import time
+from abc import ABC, abstractmethod
+from pynput import keyboard
 
-class GridworldSimulator:
+class Simulator(ABC):
     def __init__(self, environment, initial_state):
-        self.exitProgram = 0
-
         self.environment = environment
-        self.grid = self.environment.grid
         self.state = initial_state
 
-    def run(self):
-        '''
-        Blocking function to run the simulator
-        '''
-        # keyboard listener in background thread
-        listener = keyboard.Listener(on_press=self.takeAction)
-        listener.start()
-
-        self.drawGridworld()
-        while not self.exitProgram:
-            time.sleep(0.2)
+        self.exitProgram = 0
     
-    def moveToNextState(self, action):
+    def nextStep(self, action):
         '''
-        Given the selected action, randomly choose the next state based on the transition probabilities
-        and change the current state
+        Given the selected action, randomly choose the next state and output based on the transition
+        probabilities and change the current state
         '''
         actions = self.environment.P[tuple(self.state)]
 
@@ -39,30 +27,40 @@ class GridworldSimulator:
         outputs = self.environment.O[tuple(self.state)]
         output = np.random.choice(outputs[:,0], p=outputs[:,1])
         print(f'Output: {output}')
-        self.drawGridworld()
 
-    def drawGridworld(self, wall_char='X', state_char='O'):
+        self.visualize()
+
+    @abstractmethod
+    def visualize(self):
+        pass
+
+    @abstractmethod 
+    def run(self):
+        pass
+
+
+class GridworldSimulator(Simulator):
+    def visualize(self):
         '''
         Draws the current gridworld state in the command window
         '''
-        for i in range(len(self.grid)):
+        grid = self.environment.grid
+        for i in range(len(grid)):
             row = '|'
-            for j in range(len(self.grid[0])):
-                if i == self.state[0] and j == self.state[1]:
-                    row += f'{state_char}|'
-                    continue
-
-                if self.grid[i, j] == '0':
+            for j in range(len(grid[0])):
+                if (i, j) == self.state:
+                    row += 'O|'
+                elif grid[i, j] == '0':
                     row += '_|'
-                elif self.grid[i, j] == '1':
-                    row += f'{wall_char}|'
+                elif grid[i, j] == '1':
+                    row += 'X|'
                 else:
-                    row += f'{self.grid[i, j]}|'
+                    row += f'{grid[i, j]}|'
             print(row)
 
         print('\n\n\n')
 
-    def takeAction(self, key):
+    def keyboardCallback(self, key):
         '''
         Keyboard listener function to select an action based on key input
         '''
@@ -84,5 +82,13 @@ class GridworldSimulator:
             print(f'Invalid key pressed: {key}')
             return
         
-        print(f'Action: {action}')
-        self.moveToNextState(action)
+        self.nextStep(action)
+
+    def run(self):
+        # keyboard listener in background thread
+        listener = keyboard.Listener(on_press=self.keyboardCallback)
+        listener.start()
+
+        self.visualize()
+        while not self.exitProgram:
+            time.sleep(0.1)
