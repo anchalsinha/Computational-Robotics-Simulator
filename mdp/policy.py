@@ -18,7 +18,7 @@ class MDP(ABC):
                     action_value = 0
                     for next_state in self.environment.S:
                         movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
-                        movement_reward = self.R(state, action, next_state)
+                        movement_reward = self.R[state][action][next_state]
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
                     
                     if best_action is None or action_value > best_value:
