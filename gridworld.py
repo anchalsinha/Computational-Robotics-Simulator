@@ -22,6 +22,10 @@ def reward(state, action, next_state):
     else:
         return 0
 
+R = np.zeros(grid.shape)
+R[np.argwhere(grid == 'D')] = 1
+R[np.argwhere(grid == 'S')] = 1
+
 gridworld_mdp = MDP(gridworld_environment, reward)
 #gridworld_policy = gridworld_mdp.value_iteration(0.01, 0.5)
 gridworld_policy = gridworld_mdp.policy_iteration(0.01, 0.5)
