@@ -11,6 +11,7 @@ class GridworldSimulator(Simulator):
         Draws the current gridworld state in the command window
         '''
         grid = self.environment.grid
+        print(grid)
         for i in range(len(grid)):
             row = '|'
             for j in range(len(grid[0])):
@@ -20,6 +21,8 @@ class GridworldSimulator(Simulator):
                     row += '_|'
                 elif grid[i, j] == '1':
                     row += 'X|'
+                elif grid[i, j] == '2':
+                    row += 'R|'
                 else:
                     row += f'{grid[i, j]}|'
             print(row)
@@ -61,9 +64,3 @@ class GridworldSimulator(Simulator):
         self.visualize()
         while not self.exitProgram:
             time.sleep(0.1)
-
-    def run_policy(self, policy):
-        while not self.exitProgram:
-            self.nextStep(policy[self.state])
-            self.visualize()
-            time.sleep(0.5)

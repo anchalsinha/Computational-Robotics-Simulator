@@ -30,12 +30,14 @@ class Simulator(ABC):
 
         self.visualize()
  
-    def run(self):
+    def run_policy(self, policy):
         '''
-        Simulation loop
-        TODO: Implement MDP policy to get next action
+        Simulation loop with MDP policy
         '''
-        pass
+        while not self.exitProgram:
+            self.nextStep(policy[self.state])
+            self.visualize()
+            time.sleep(0.5)
 
     @abstractmethod
     def visualize(self):
