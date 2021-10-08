@@ -2,9 +2,8 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 class MDP(ABC):
-    def __init__(self, environment, R):
+    def __init__(self, environment):
         self.environment = environment
-        self.R = R
         self.exitProgram = 0
 
     # Doesn't work when gamma = 1.0
@@ -18,7 +17,7 @@ class MDP(ABC):
                     action_value = 0
                     for next_state in self.environment.S:
                         movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
-                        movement_reward = self.R[state][action][next_state]
+                        movement_reward = self.environment.R[state][action][next_state]
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
                     
                     if best_action is None or action_value > best_value:
@@ -43,7 +42,7 @@ class MDP(ABC):
                     state_value = 0
                     for next_state in self.environment.S:
                         movement_prob = self.environment.P.get(state, {}).get(policy[state], {}).get(next_state, 0)
-                        movement_reward = self.R(state, policy[state], next_state)
+                        movement_reward = self.environment.R(state, policy[state], next_state)
                         state_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
 
                     value_delta = max(value_delta, abs(value.get(state, 0) - state_value))
@@ -57,7 +56,7 @@ class MDP(ABC):
                     action_value = 0
                     for next_state in self.environment.S:
                         movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
-                        movement_reward = self.R(state, action, next_state)
+                        movement_reward = self.environment.R(state, action, next_state)
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
 
                     if best_action is None or action_value > best_value:

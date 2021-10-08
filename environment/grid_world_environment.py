@@ -22,7 +22,18 @@ class GridworldEnvironment(Environment):
         O = self.calculate_observation_set(S)
         P = self.calculate_transition_prob_set(S, A)
 
-        Environment.__init__(self, S, A, P, O)
+        R = self.calculate_reward_set(S, A)
+
+        Environment.__init__(self, S, A, P, O, R)
+
+    def calculate_reward_set(self, S, A):
+        R = {}
+        for state in S:
+            for action in A:
+                for next_state in S:
+                    R.setdefault(state, {})
+                    R[state].setdefault(action, {})
+                    R[state][action][next_state] = 1 if self.grid[next_state] == 'D' or self.grid[next_state] == 'H' else 0
 
     def calculate_observation_set(self, S):
         O = {}
