@@ -12,7 +12,7 @@ class GridworldEnvironment(Environment):
         self.Pe = Pe
 
         self.target_coords = np.array(np.where((grid != '0') & (grid != '1'))).T
-        print(self.target_coords)
+        self.road_coords = np.array(np.where((grid == '2'))).T
         self.rows, self.cols = grid.shape
 
         # define state and action spaces
@@ -33,7 +33,14 @@ class GridworldEnvironment(Environment):
                 for next_state in S:
                     R.setdefault(state, {})
                     R[state].setdefault(action, {})
-                    R[state][action][next_state] = 1 if self.grid[next_state] == 'D' or self.grid[next_state] == 'H' else 0
+                    if list(next_state) in self.target_coords:
+                        R[state][action][next_state] = 1
+                    elif list(next_state) in self.road_coords:
+                        R[state][action][next_state] = -1
+                    else:
+                        R[state][action][next_state] = 0
+
+        return R
 
     def calculate_observation_set(self, S):
         O = {}

@@ -27,8 +27,6 @@ class Simulator(ABC):
         outputs = self.environment.O[tuple(self.state)]
         output = np.random.choice(outputs[:,0], p=outputs[:,1])
         print(f'Output: {output}')
-
-        self.visualize()
  
     def run_policy(self, policy):
         '''
