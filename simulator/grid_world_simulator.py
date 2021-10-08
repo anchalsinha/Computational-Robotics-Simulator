@@ -61,3 +61,9 @@ class GridworldSimulator(Simulator):
         self.visualize()
         while not self.exitProgram:
             time.sleep(0.1)
+
+    def run_policy(self, policy):
+        while not self.exitProgram:
+            self.nextStep(policy[self.state])
+            self.visualize()
+            time.sleep(0.5)
