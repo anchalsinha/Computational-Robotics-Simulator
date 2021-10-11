@@ -18,23 +18,21 @@ class NumberLineEnvironment(Environment):
         self.velocity = 0  # velocity
         self.time = 0
         
-        self.position_list = []
-        self.velocity_list = []
-        self.observation_list = []
+        
 
         self.position_space = np.array([a for a in range(-self.y_max,self.y_max,1)])
         self.velocity_space = np.array([a for a in range(-self.v_max,self.v_max,1)])
         self.update_state()
-        # define state and action spaces
-        S = (self.position,self.velocity)
-        A = [-1,0,1]
+        # define state and action spaces.We formulate based on aggregate sets
+        S = [(y, x) for y in range(0, self.position_space) for x in range(0, self.velocity_space)]  # set of all states
+        A = [-1,0,1]                                   # set of all actions
 
-        O = self.calculate_observation_set()
-        P = self.calculate_transition_prob_set(S, A)
+        O = self.calculate_observation_set(S)            # set of all observations 
+        P = self.calculate_transition_prob_set(S, A)    # set of all transtions probabilities
 
         Environment.__init__(self, S, A, P, O)
         
-    def phi(self,y):
+    def phi(self,y) -> int :
         return self.hill_size*np.sin((2*np.pi*y)/self.y_max)
     
     def sim_input(self, t):
@@ -43,38 +41,59 @@ class NumberLineEnvironment(Environment):
     def update_state(self):
         #TODO add  check to see if valid (?)
         self.state = (self.position,self.velocity)
-        self.S = (self.position,self.velocity)
     
-    def calculate_observation_set(self):
-        return self.position + self._noise_sensor(self.velocity)
+    def calculate_observation_set(self,S) :
+        O = {}
+        for state in S:
+            o =  self.h(state[0],state[1])
+            O[state] = o
+        return O
+
+    def h(self,position=None,velocity=None) -> int:
+        if position ==None:
+            position=self.position
+        if velocity == None:
+            velocity =self.velocity
+        retval =  int(position + self._noise_sensor(velocity))
+        #check for bounds
+        retval =self._check_bounds(retval,self.y_max)
+        return retval
+
+    def _check_bounds(self,retval,max_val):
+        if retval > max_val:
+            retval =max_val
+        elif retval < -max_val:
+            retval= -max_val
+        return retval
+
+    def _next_position(self,state):
+        retval = state[0] + state[1]*1 #time step one unit
+        return self._check_bounds(retval,self.y_max)
     
     def calculate_transition_prob_set(self,S, A):
+        transition_mat = {}
         for state in S: #current State
-            has_crashed = random.uniform(0, 1) < ((np.abs(self.state[1]) - self.v_max) * self.p_c)/self.v_max
-            
-            for a in A:
+            has_crashed = random.uniform(0, 1) < ((np.abs(state[1])) * self.p_c)/self.v_max
+            a_dict ={}
+            for action in A:  #current action
+                s_dict = {}
+                
                 if has_crashed:
-                    self.velocity = 0
+                    next_velocity = 0
                 else:
-                    self.velocity = self.state[1] + (1 / self.m) * self._net_force(sys_input) + self._noise_dynamics(self.state[1])
-                for next_state in S:
-                    pass
-
-
-    def f(self,sys_input,dt):
-        # from @alexswerdlow
-        # update state
-        self.position = self.velocity * dt
-        has_crashed = random.uniform(0, 1) < ((np.abs(self.state[1]) - self.v_max) * self.p_c)/self.v_max
-        if has_crashed:
-            self.velocity = 0
-        else:
-            self.velocity = self.state[1] + (1 / self.m) * self._net_force(sys_input) + self._noise_dynamics(self.state[1])
-        
-        self.update_state()
-    
-    def _net_force(self, input_force):
-        f_net = input_force + derivative(self.phi, self.state[0]) 
+                    next_velocity = state[1] + (1 / self.m) * self._net_force(action) + self._noise_dynamics(state[1])
+                next_velocity =self._check_bounds(next_velocity,self.v_max)
+                next_position = self._next_position(state)
+                next_state= (next_position,next_velocity)
+                s_dict[next_state] = 1 #transition probability 1 for now
+            
+                a_dict[action] = s_dict
+            transition_mat[tuple(state)] = a_dict
+        return transition_mat
+                
+ 
+    def _net_force(self, input_force) -> int:
+        f_net = int(input_force + derivative(self.phi, self.state[0]) )
         return f_net
     
     def _noise_sensor(self,v):
@@ -84,20 +103,4 @@ class NumberLineEnvironment(Environment):
         #TODO change to new speed wobble 
         return np.random.normal(0, 0.1*v)
         
-    def update_variables_to_plot(self):
-        #OLD
-        self.position_list.append(self.state[0])
-        self.velocity_list.append(self.state[1])
-        self.observation_list.append(self.h())
-        self.update_state()
-    
-    def vars_to_plot(self):
-        #OLD
-        return [self.position_list,self.velocity_list,self.observation_list]
-    
-    def cleanup_variable_store(self):
-        #OLD
-        self.position_list = []
-        self.velocity_list = []
-        self.observation_list = []
-
+   
