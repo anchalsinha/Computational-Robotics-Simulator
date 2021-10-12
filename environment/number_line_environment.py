@@ -24,7 +24,7 @@ class NumberLineEnvironment(Environment):
         self.velocity_space = np.array([a for a in range(-self.v_max,self.v_max,1)])
         self.update_state()
         # define state and action spaces.We formulate based on aggregate sets
-        S = [(y, x) for y in range(0, self.position_space) for x in range(0, self.velocity_space)]  # set of all states
+        S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
         A = [-1,0,1]                                   # set of all actions
 
         O = self.calculate_observation_set(S)            # set of all observations 
@@ -97,10 +97,10 @@ class NumberLineEnvironment(Environment):
         return f_net
     
     def _noise_sensor(self,v):
-        return np.random.normal(0, 0.5*v)
+        return np.random.normal(0, np.abs(0.5*v))
     
     def _noise_dynamics(self,v):
         #TODO change to new speed wobble 
-        return np.random.normal(0, 0.1*v)
+        return np.random.normal(0, np.abs(0.1*v))
         
    

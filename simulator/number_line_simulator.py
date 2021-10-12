@@ -47,3 +47,12 @@ class NumberlineSimulator(Simulator):
         self.visualize()
         while not self.exitProgram:
             time.sleep(0.1)
+    
+    def run(self):
+        # keyboard listener in background thread
+        listener = keyboard.Listener(on_press=self.keyboardCallback)
+        listener.start()
+
+        self.visualize()
+        while not self.exitProgram:
+            time.sleep(0.1)
