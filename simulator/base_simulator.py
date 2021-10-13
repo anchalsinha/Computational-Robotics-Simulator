@@ -41,9 +41,9 @@ class Simulator(ABC):
                     if policy[i, j] == (0, 0):
                         row += 'S|'
                     elif policy[i, j] == (1, 0):
-                        row += '↑|'
-                    elif policy[i, j] == (-1, 0):
                         row += '↓|'
+                    elif policy[i, j] == (-1, 0):
+                        row += '↑|'
                     elif policy[i, j] == (0, 1):
                         row += '→|'
                     else:
