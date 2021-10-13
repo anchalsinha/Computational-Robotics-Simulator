@@ -86,6 +86,7 @@ class NumberLineEnvironment(Environment):
                 next_position = self._next_position(state)
                 next_state= (next_position,next_velocity)
                 s_dict[next_state] = 1 #transition probability 1 for now
+                # calculate prob here, from the output of the sys dynamincs equation using it with the probability bins (another function) to calculate p, using knn
             
                 a_dict[action] = s_dict
             transition_mat[tuple(state)] = a_dict

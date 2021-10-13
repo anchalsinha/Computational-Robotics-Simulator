@@ -14,7 +14,7 @@ class NumberlineSimulator(Simulator):
             else:
                 print("-")
             
-        print('\n\n\n')
+        print('\t')
 
     def keyboardCallback(self, key):
         '''
@@ -35,18 +35,6 @@ class NumberlineSimulator(Simulator):
             self.nextStep(action)
         except:
             pass
-
-    def run_manual_input(self):
-        '''
-        Simulation loop
-        '''
-        # keyboard listener in background thread
-        listener = keyboard.Listener(on_press=self.keyboardCallback)
-        listener.start()
-
-        self.visualize()
-        while not self.exitProgram:
-            time.sleep(0.1)
     
     def run(self):
         # keyboard listener in background thread
@@ -56,3 +44,10 @@ class NumberlineSimulator(Simulator):
         self.visualize()
         while not self.exitProgram:
             time.sleep(0.1)
+    
+    
+    def run_policy(self, policy):
+        while not self.exitProgram:
+            self.nextStep(policy[self.state])
+            self.visualize()
+            time.sleep(0.5)
