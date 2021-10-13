@@ -34,6 +34,29 @@ class Simulator(ABC):
         '''
         while not self.exitProgram:
             self.nextStep(policy[self.state])
+            print("Policy: ")
+            for i in range(len(self.environment.grid)):
+                row = '|'
+                for j in range(len(self.environment.grid[0])):
+                    if policy[i, j] == (0, 0):
+                        row += 'S|'
+                    elif policy[i, j] == (1, 0):
+                        row += '↑|'
+                    elif policy[i, j] == (-1, 0):
+                        row += '↓|'
+                    elif policy[i, j] == (0, 1):
+                        row += '→|'
+                    else:
+                        row += f'←|'
+                print(row)
+
+            print("Reward: ")
+            for i in range(len(self.environment.grid)):
+                row = '|'
+                for j in range(len(self.environment.grid[0])):
+                    row += f'{self.environment.R[(0,0)][(0,0)][i, j]}|'
+                print(row)
+
             self.visualize()
             time.sleep(0.5)
 
