@@ -97,3 +97,18 @@ class GridworldEnvironment(Environment):
             transition_mat[tuple(s)]  = a_dic
         return transition_mat
     
+    def visualize(self, states):
+        for i in range(len(self.grid)):
+            row = '|'
+            for j in range(len(self.grid[0])):
+                if (i, j) in states:
+                    row += 'O|'
+                elif self.grid[i, j] == '0':
+                    row += '_|'
+                elif self.grid[i, j] == '1':
+                    row += 'X|'
+                else:
+                    row += f'{self.grid[i, j]}|'
+            print(row)
+
+        print('\n\n\n')
