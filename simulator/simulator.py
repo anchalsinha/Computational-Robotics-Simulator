@@ -1,9 +1,8 @@
 import numpy as np
 import time
-from abc import ABC, abstractmethod
 from pynput import keyboard
 
-class Simulator(ABC):
+class Simulator:
     def __init__(self, environment, initial_state):
         self.environment = environment
         self.state = initial_state
@@ -28,15 +27,12 @@ class Simulator(ABC):
         output = np.random.choice(outputs[:,0], p=outputs[:,1])
         print(f'Output: {output}')
 
-        self.visualize()
+    def nextStepPolicy(self, policy):
+        return self.nextStep(policy[self.state])
  
     def run(self):
         '''
         Simulation loop
         TODO: Implement MDP policy to get next action
         '''
-        pass
-
-    @abstractmethod
-    def visualize(self):
         pass

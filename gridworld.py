@@ -1,7 +1,8 @@
 import numpy as np
+import time
 
 from environment import GridworldEnvironment
-from simulator import GridworldSimulator
+from simulator import Simulator
 from mdp import MDP
 
 # 0 - empty
@@ -25,5 +26,10 @@ gridworld_mdp = MDP(gridworld_environment)
 gridworld_policy = gridworld_mdp.value_iteration(0.01, 0.5)
 # gridworld_policy = gridworld_mdp.policy_iteration(0.01, 0.5)
 
-gridworld_simulator = GridworldSimulator(gridworld_environment, initial_state)
-gridworld_simulator.run_policy(gridworld_policy)
+gridworld_simulator = Simulator(gridworld_environment, initial_state)
+gridworld_environment.visualize([gridworld_simulator.state])
+
+while not gridworld_simulator.exitProgram:
+    gridworld_simulator.nextStepPolicy(gridworld_policy)
+    gridworld_environment.visualize([gridworld_simulator.state])
+    time.sleep(0.5)
