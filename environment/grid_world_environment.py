@@ -106,8 +106,31 @@ class GridworldEnvironment(Environment):
                 a_dic[a]= s_dict
             transition_mat[tuple(s)]  = a_dic
         return transition_mat
+    
+    def visualize(self, states, policy):
+        print("Policy: ")
+        for i in range(len(self.grid)):
+            row = '|'
+            for j in range(len(self.grid[0])):
+                if policy[i, j] == (0, 0):
+                    row += 'S|'
+                elif policy[i, j] == (1, 0):
+                    row += '↓|'
+                elif policy[i, j] == (-1, 0):
+                    row += '↑|'
+                elif policy[i, j] == (0, 1):
+                    row += '→|'
+                else:
+                    row += f'←|'
+            print(row)
 
-    def visualize(self, states):
+        print("Reward: ")
+        for i in range(len(self.grid)):
+            row = '|'
+            for j in range(len(self.grid[0])):
+                row += f'{self.get_r((0,0),(0,0),(i, j))}|'
+            print(row)
+
         for i in range(len(self.grid)):
             row = '|'
             for j in range(len(self.grid[0])):
@@ -136,3 +159,6 @@ class GridworldEnvironment(Environment):
             return self.Pe/(len(list_possible_jumps)-1)
         else:
             return 0
+
+    def get_r(self, state, action, next_state):
+        return self.R[state][action][next_state]
