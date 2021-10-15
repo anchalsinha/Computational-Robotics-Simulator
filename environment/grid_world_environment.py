@@ -26,6 +26,13 @@ class GridworldEnvironment(Environment):
 
         Environment.__init__(self, S, A, P, O, R)
 
+    def calculate_phi(self, state):
+        return [
+            np.sum(np.linalg.norm(state, axis=1)), # sum of distances 
+            np.sum([np.mean(np.linalg.norm(np.subtract(self.target_coords, s), axis=1)) for s in state]), # sum of harmonic mean distance to targets
+            
+        ]
+
     def calculate_reward_set(self, S, A):
         R = {}
         for state in S:
@@ -88,7 +95,7 @@ class GridworldEnvironment(Environment):
                 a_dic[a]= s_dict
             transition_mat[tuple(s)]  = a_dic
         return transition_mat
-    
+
     def visualize(self, states):
         for i in range(len(self.grid)):
             row = '|'

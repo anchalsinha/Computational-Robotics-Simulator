@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 
 class Environment(ABC):
-    def __init__(self, S, A, P, O, R):
+    def __init__(self, S, A, P, O, R, functions):
         self.S, self.A, self.P, self.O, self.R = S, A, P, O, R
+        self.basis_functions = functions
     
     @abstractmethod
     def visualize(self, states):
         pass
-        
+    
