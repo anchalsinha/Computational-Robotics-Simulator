@@ -27,11 +27,14 @@ class GridworldEnvironment(Environment):
         Environment.__init__(self, S, A, P, O, R)
 
     def calculate_phi(self, state):
-        return [
+        basis_functions = [
             np.sum(np.linalg.norm(state, axis=1)), # sum of distances 
             np.sum([np.mean(np.linalg.norm(np.subtract(self.target_coords, s), axis=1)) for s in state]), # sum of harmonic mean distance to targets
-            
+            np.sum([np.mean(np.linalg.norm(np.subtract(self.road_coords, s), axis=1)) for s in state]), # sum of harmonic mean distance to the road
         ]
+        basis_functions += [len(self.possible_jumps(self.A, s)) for s in state] # number of possible jumps for each agent
+
+        return basis_functions
 
     def calculate_reward_set(self, S, A):
         R = {}

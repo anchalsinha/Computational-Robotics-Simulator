@@ -6,6 +6,10 @@ class Environment(ABC):
         self.basis_functions = functions
     
     @abstractmethod
+    def calculate_phi(self, state):
+        pass
+    
+    @abstractmethod
     def visualize(self, states):
         pass
     
