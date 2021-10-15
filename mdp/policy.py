@@ -1,5 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
+import scipy
+from scipy.optimize import least_squares
 
 class MDP(ABC):
     def __init__(self, environment):
@@ -71,4 +73,34 @@ class MDP(ABC):
 
             if is_policy_stable:
                 break
+        return policy
+    def value_iteration_FA(self, termination_epsilon = 0.01, gamma = 0.5):
+        policy, value, value_theta, value_delta = {}, {}, {}, 1
+        theta = random.rand(#number of basis functions)
+
+        while value_delta > termination_epsilon:
+            value_delta = 0
+            for state in self.environment.S:
+                best_action, best_value = None, None
+                for action in self.environment.A:
+                    action_value = 0
+                    for next_state in self.environment.S:
+                        movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
+                        movement_reward = self.environment.R[state][action][next_state]
+                        action_value += movement_prob * (movement_reward + gamma * (theta * basis[next_state]))
+                    
+                    if best_action is None or action_value > best_value:
+                        best_action, best_value = action, action_value
+
+                value_delta = max(value_delta, abs(value.get(state, 0) - best_value))
+                policy[state], value[state] = best_action, best_value
+            def v_difference(x):
+                squared_sum = 0
+                difference = 0
+                for state in self.environment.S:
+                    difference = value[state] - (x * basis[state])
+                    squared_sum =+ squared_sum + (difference * difference)
+                return squared_sum
+            ls_theta = least_squares(squared_sum, theta)
+            theta = ls_theta.x
         return policy
