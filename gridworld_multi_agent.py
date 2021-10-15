@@ -23,14 +23,14 @@ initial_states = [(0, 2), (0, 0), (4, 0)] # initial states assuming that this st
 gridworld_environment = GridworldEnvironment(grid, Pe)
 
 gridworld_mdp = MDP(gridworld_environment)
-gridworld_policy = gridworld_mdp.value_iteration(0.01, 0.5)
+gridworld_policy = gridworld_mdp.value_iteration_FA(0.01, 0.5)
 # gridworld_policy = gridworld_mdp.policy_iteration(0.01, 0.5)
 
 simulators = [Simulator(gridworld_environment, state) for state in initial_states]
-gridworld_environment.visualize([s.state for s in simulators])
+gridworld_environment.visualize([s.state for s in simulators], gridworld_policy)
 
 while True:
     for sim in simulators:
         sim.nextStepPolicy(gridworld_policy)
-    gridworld_environment.visualize([s.state for s in simulators])
+    gridworld_environment.visualize([s.state for s in simulators], gridworld_policy)
     time.sleep(0.5)
