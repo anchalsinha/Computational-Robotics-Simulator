@@ -77,7 +77,8 @@ class MDP(ABC):
         return policy
     def value_iteration_FA(self, termination_epsilon = 0.01, gamma = 0.5):
         policy, value, value_theta, value_delta = {}, {}, {}, 1
-        theta = random.rand(#number of basis functions)
+        theta = random.rand(#number of basis functions
+        )
 
         while value_delta > termination_epsilon:
             value_delta = 0
@@ -88,7 +89,7 @@ class MDP(ABC):
                     for next_state in self.environment.S:
                         movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
                         movement_reward = self.environment.R[state][action][next_state]
-                        action_value += movement_prob * (movement_reward + gamma * (theta * basis[next_state]))
+                        action_value += movement_prob * (movement_reward + gamma * (theta * self.environment.calculate_phi(next_state)))
                     
                     if best_action is None or action_value > best_value:
                         best_action, best_value = action, action_value
@@ -99,7 +100,7 @@ class MDP(ABC):
                 squared_sum = 0
                 difference = 0
                 for state in self.environment.S:
-                    difference = value[state] - (x * basis[state])
+                    difference = value[state] - (x * self.environment.calculate_phi(state))
                     squared_sum =+ squared_sum + (difference * difference)
                 return squared_sum
             ls_theta = least_squares(squared_sum, theta)
