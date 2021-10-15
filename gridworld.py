@@ -24,8 +24,8 @@ initial_state = (0, 0) # initial state assuming that this state lies in an empty
 gridworld_environment = GridworldEnvironment(grid, Pe)
 
 gridworld_mdp = MDP(gridworld_environment)
-# gridworld_policy = gridworld_mdp.value_iteration(0.01, 0.5)
-gridworld_policy = gridworld_mdp.policy_iteration(0.01, 0.99)
+gridworld_policy = gridworld_mdp.value_iteration(0.01, 0.5)
+# gridworld_policy = gridworld_mdp.policy_iteration(0.01, 0.99)
 
 gridworld_simulator = Simulator(gridworld_environment, initial_state)
 gridworld_environment.visualize([gridworld_simulator.state])

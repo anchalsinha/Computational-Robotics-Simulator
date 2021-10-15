@@ -16,7 +16,7 @@ class MDP(ABC):
                 for action in self.environment.possible_actions(state):
                     action_value = 0
                     for next_state in self.environment.possible_jumps(self.environment.A, state):
-                        movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
+                        movement_prob = self.environment.get_p(state, action, next_state)
                         movement_reward = self.environment.R[state][action][next_state]
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
                     
@@ -42,7 +42,7 @@ class MDP(ABC):
                 for state in self.environment.S:
                     state_value = 0
                     for next_state in self.environment.possible_jumps(self.environment.A, state):
-                        movement_prob = self.environment.P.get(state, {}).get(policy[state], {}).get(next_state, 0)
+                        movement_prob = self.environment.get_p(state, policy[state], next_state)
                         movement_reward = self.environment.R[state][policy[state]][next_state]
                         state_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
 
@@ -56,7 +56,7 @@ class MDP(ABC):
                 for action in self.environment.possible_actions(state):
                     action_value = 0
                     for next_state in self.environment.possible_jumps(self.environment.A, state):
-                        movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
+                        movement_prob = self.environment.get_p(state, action, next_state)
                         movement_reward = self.environment.R[state][action][next_state]
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
 

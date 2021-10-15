@@ -112,3 +112,25 @@ class GridworldEnvironment(Environment):
             print(row)
 
         print('\n\n\n')
+
+    def get_p(self, state, action, next_state):
+        # return self.P.get(state, {}).get(action, {}).get(next_state, 0)
+        list_possible_jumps = self.possible_jumps(self.A, state)
+        desired_state = tuple(np.add(state, action))
+        invalid = tuple(desired_state) not in list_possible_jumps 
+        if invalid and state == next_state: # if invalid desired state and s_ is current state
+            return 1
+        elif not invalid and desired_state == next_state: # if not invalid desired state and s_ is desired state
+            return float(1 - self.Pe)
+        elif not invalid and next_state in list_possible_jumps: # if not invalid desired state and s_ is valid
+            return self.Pe/(len(list_possible_jumps)-1)
+        else:
+            return 0
+
+    def get_basis_functions(self):
+        def fun0(state):
+
+        def fun1(state):
+
+
+        return [fun0, fun1, fun2, fun3, fun4]
