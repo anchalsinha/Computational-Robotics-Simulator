@@ -126,11 +126,3 @@ class GridworldEnvironment(Environment):
             return self.Pe/(len(list_possible_jumps)-1)
         else:
             return 0
-
-    def get_basis_functions(self):
-        def fun0(state):
-
-        def fun1(state):
-
-
-        return [fun0, fun1, fun2, fun3, fun4]
