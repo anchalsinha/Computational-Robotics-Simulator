@@ -15,10 +15,10 @@ class MDP(ABC):
             value_delta = 0
             for state in self.environment.S:
                 best_action, best_value = None, None
-                for action in self.environment.A:
+                for action in self.environment.possible_actions(state):
                     action_value = 0
-                    for next_state in self.environment.S:
-                        movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
+                    for next_state in self.environment.possible_jumps(self.environment.A, state):
+                        movement_prob = self.environment.get_p(state, action, next_state)
                         movement_reward = self.environment.R[state][action][next_state]
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
                     
@@ -34,7 +34,8 @@ class MDP(ABC):
 
         # Randomly initialize policy
         for state in self.environment.S:
-            policy[state] = self.environment.A[np.random.choice(range(len(self.environment.A)), 1)[0]]
+            possible_actions = self.environment.possible_actions(state)
+            policy[state] = possible_actions[np.random.choice(range(len(possible_actions)), 1)[0]]
 
         while True:
             # Policy Evaluation
@@ -42,9 +43,9 @@ class MDP(ABC):
                 value_delta = 0
                 for state in self.environment.S:
                     state_value = 0
-                    for next_state in self.environment.S:
-                        movement_prob = self.environment.P.get(state, {}).get(policy[state], {}).get(next_state, 0)
-                        movement_reward = self.environment.R(state, policy[state], next_state)
+                    for next_state in self.environment.possible_jumps(self.environment.A, state):
+                        movement_prob = self.environment.get_p(state, policy[state], next_state)
+                        movement_reward = self.environment.R[state][policy[state]][next_state]
                         state_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
 
                     value_delta = max(value_delta, abs(value.get(state, 0) - state_value))
@@ -54,11 +55,11 @@ class MDP(ABC):
             is_policy_stable = True 
             for state in self.environment.S:
                 best_action, best_value = None, None
-                for action in self.environment.A:
+                for action in self.environment.possible_actions(state):
                     action_value = 0
-                    for next_state in self.environment.S:
-                        movement_prob = self.environment.P.get(state, {}).get(action, {}).get(next_state, 0)
-                        movement_reward = self.environment.R(state, action, next_state)
+                    for next_state in self.environment.possible_jumps(self.environment.A, state):
+                        movement_prob = self.environment.get_p(state, action, next_state)
+                        movement_reward = self.environment.R[state][action][next_state]
                         action_value += movement_prob * (movement_reward + gamma * value.get(next_state, 0))
 
                     if best_action is None or action_value > best_value:

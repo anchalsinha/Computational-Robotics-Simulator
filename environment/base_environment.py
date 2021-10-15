@@ -5,6 +5,10 @@ class Environment(ABC):
         self.S, self.A, self.P, self.O, self.R = S, A, P, O, R
     
     @abstractmethod
+    def calculate_phi(self, state):
+        pass
+
+    @abstractmethod
     def visualize(self, states):
         pass
-        
+    

@@ -30,9 +30,8 @@ class Simulator:
     def nextStepPolicy(self, policy):
         return self.nextStep(policy[self.state])
  
-    def run(self):
+    def run_policy(self, policy):
         '''
-        Simulation loop
-        TODO: Implement MDP policy to get next action
+        Simulation loop with MDP policy
         '''
         pass
