@@ -1,4 +1,4 @@
-from .base_environment import Environment
+from environment.base_environment import Environment
 import numpy as np
 from collections import defaultdict
 from abc import ABC, abstractmethod
@@ -11,8 +11,8 @@ class MDP(ABC):
         self.exitProgram = 0
 
 
-    def value_iteration(self, termination_epsilon = 0.01):
-        policy, value, value_delta, termination_epsilon = {}, {}, 0
+    def value_iteration(self, termination_epsilon = 0.01,gamma = 0.5):
+        policy, value, value_delta = {}, {}, 0
         while value_delta > termination_epsilon:
             value_delta = 0
             for state in self.state:
@@ -29,6 +29,7 @@ class MDP(ABC):
 
                 value_delta = max(value_delta, abs(value[state] - best_value))
                 policy[state], value[state] = best_action, best_value
+        return policy
                 
     def policy_iteration(self, termination_epsilon = 0.01):
         policy, value, value_delta  = {}, {}, 0

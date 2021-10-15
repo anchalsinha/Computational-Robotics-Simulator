@@ -12,13 +12,15 @@ class NumberLineEnvironment(Environment):
         self.y_max = 10
         self.p_c = 5
         self.m = 10
-        self.hill_size = 2 #TODO make input
+        self.hill_size = 2    #TODO make input
+
+        #MDP
+        self.gamma = 0.8
 
         self.position = 0  # position
         self.velocity = 0  # velocity
         self.time = 0
-        
-        
+
 
         self.position_space = np.array([a for a in range(-self.y_max,self.y_max,1)])
         self.velocity_space = np.array([a for a in range(-self.v_max,self.v_max,1)])
@@ -31,7 +33,10 @@ class NumberLineEnvironment(Environment):
         P = self.calculate_transition_prob_set(S, A)    # set of all transtions probabilities
 
         Environment.__init__(self, S, A, P, O)
-        
+    
+    def grid_decomposition(self):
+        pass
+
     def phi(self,y) -> int :
         return self.hill_size*np.sin((2*np.pi*y)/self.y_max)
     
@@ -41,7 +46,16 @@ class NumberLineEnvironment(Environment):
     def update_state(self):
         #TODO add  check to see if valid (?)
         self.state = (self.position,self.velocity)
-    
+
+    def calculate_reward_set(self,S,A):
+        R = {}
+        for state in S:
+            for action in A:
+                for next_state in S:
+                    R.setdefault(state, {})
+                    R[state].setdefault(action, {})
+                    R[state][action][next_state] = 1 if self.grid[next_state] == 'D' or self.grid[next_state] == 'H' else 0
+
     def calculate_observation_set(self,S) :
         O = {}
         for state in S:
@@ -92,7 +106,13 @@ class NumberLineEnvironment(Environment):
             transition_mat[tuple(state)] = a_dict
         return transition_mat
                 
- 
+    def probability_of_state(self):
+        pass
+    
+    def knn(self):
+        pass
+    
+
     def _net_force(self, input_force) -> int:
         f_net = int(input_force + derivative(self.phi, self.state[0]) )
         return f_net
