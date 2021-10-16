@@ -65,6 +65,14 @@ class YahtzeeEnvironment(Environment):
                         T[s][a][ns] = math.factorial(len(set(needed))) * ((1/6)**num_rolls)
 
         return T 
+    
+    def visualize(self, states, policy):
+        print('Current state:')
+        print(states[0])
+
+        print('Policy:')
+        print(policy[states[0]])
+
 
 
 
