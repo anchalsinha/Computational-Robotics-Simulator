@@ -25,6 +25,7 @@ class NumberLineEnvironment(Environment):
         self.position_space = np.array([a for a in range(-self.y_max,self.y_max,1)])
         self.velocity_space = np.array([a for a in range(-self.v_max,self.v_max,1)])
         self.update_state()
+
         # define state and action spaces.We formulate based on aggregate sets
         S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
         A = [-1,0,1]                                   # set of all actions
@@ -34,7 +35,11 @@ class NumberLineEnvironment(Environment):
 
         Environment.__init__(self, S, A, P, O)
     
-    def grid_decomposition(self):
+    def state_space_discretization(self,resolution= 0.1):
+        self.position_space = []
+        self.velocity_space = []
+    
+    def action_space_discretization(self):
         pass
 
     def phi(self,y) -> int :
