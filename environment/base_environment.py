@@ -9,6 +9,18 @@ class Environment(ABC):
         pass
 
     @abstractmethod
+    def calculate_reward(self, state):
+        pass
+
+    @abstractmethod
+    def calculate_observation(self, state):
+        pass
+
+    @abstractmethod
+    def calculate_transition_prob(self, state, action):
+        pass
+
+    @abstractmethod
     def visualize(self, states):
         pass
     

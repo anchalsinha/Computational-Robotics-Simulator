@@ -20,7 +20,7 @@ Pe = 0.3 # error probability
 initial_states = [(0, 2), (0, 0), (4, 0)] # initial states assuming that this state lies in an empty cell on the grid
 
 
-gridworld_environment = GridworldEnvironment(grid, Pe)
+gridworld_environment = GridworldEnvironment(grid, Pe, len(initial_states))
 
 gridworld_mdp = MDP(gridworld_environment)
 gridworld_policy = gridworld_mdp.value_iteration_FA(0.01, 0.5)
