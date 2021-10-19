@@ -5,7 +5,7 @@ from scipy.misc import derivative
 from .base_environment import Environment
 
 class NumberLineEnvironment(Environment):
-    def __init__(self,gamma = 0.8,hill_size=2,resolution=0.1):
+    def __init__(self,gamma = 0.8,hill_size=2,resolution=0.1,target_state= (0,0)):
         # TODO: Define S, A, P, and O
         # Environment.__init__(self, S, A, P, O)
         self.v_max = 10
@@ -22,6 +22,7 @@ class NumberLineEnvironment(Environment):
         self.velocity = 0  # velocity
         self.time = 0
         
+        self.target_state = target_state
 
 
         self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
@@ -62,19 +63,22 @@ class NumberLineEnvironment(Environment):
         self.state = (self.position,self.velocity)
 
     def calculate_reward_set(self, S, A):
-        ##TODO define reward function for numberline
+        ##TODO Tweak the reward function
+        ## Iterating through all the states in the state space
+        ## Rewards
+        ## 1 for next state desired state
+        ## -1 for next state undesired state
         R = {}
         for state in S:
             for action in A:
                 for next_state in S:
                     R.setdefault(state, {})
                     R[state].setdefault(action, {})
-                    if list(next_state) in self.target_coords.tolist():
+                    if next_state == self.target_state:
                         R[state][action][next_state] = 1
-                    elif list(next_state) in self.road_coords.tolist():
+                    elif next_state != self.target_state:
                         R[state][action][next_state] = -1
-                    else:
-                        R[state][action][next_state] = 0
+                    
         return R
 
     def calculate_observation_set(self,S) :

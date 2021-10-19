@@ -5,8 +5,11 @@ from simulator import NumberlineSimulator
 from mdp.policy import MDP
 
 
-initial_state =  (0,0)
 numberline_environment = NumberLineEnvironment()
+ymax=numberline_environment.y_max
+vmax= numberline_environment.v_max
+initial_state =  (ymax,0)
+
 numberline_simulator = NumberlineSimulator(numberline_environment,initial_state)
 
 numberline_mdp = MDP(numberline_environment)
