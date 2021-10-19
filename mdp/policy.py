@@ -78,7 +78,7 @@ class MDP(ABC):
     def value_iteration_FA(self, termination_epsilon = 0.01, gamma = 0.5):
         policy, value_delta = {}, 1
         value_function = {state : 0 for state in self.environment.S}
-        theta = np.random.rand(len(self.environment.calculate_phi([self.environment.S[0]]))) # num of basis functions
+        theta = np.random.rand(len(self.environment.calculate_phi(self.environment.S[0]))) # num of basis functions
 
         while value_delta > termination_epsilon:
             value_delta = 0

@@ -10,11 +10,11 @@ from mdp import MDP
 # characters (i.e. 'D' and 'S') - target
 # TODO: different indication of road which will have negative reward
 grid = np.array([
-    [0, 0, 0, 0, 1],
-    [0, 1, 1, 0, 1],
-    [0, 0, 'D', 0, 1],
-    [0, 1, 1, 0, 1],
-    [0, 0, 'S', 0, 1],
+    [0, 0, 0, 0, 2],
+    [0, 1, 1, 0, 2],
+    [0, 0, 'D', 0, 2],
+    [0, 1, 1, 0, 2],
+    [0, 0, 'S', 0, 2],
 ])
 Pe = 0.3 # error probability
 initial_states = [(0, 2), (0, 0), (4, 0)] # initial states assuming that this state lies in an empty cell on the grid
