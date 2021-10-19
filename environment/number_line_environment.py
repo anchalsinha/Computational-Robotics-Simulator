@@ -5,25 +5,26 @@ from scipy.misc import derivative
 from .base_environment import Environment
 
 class NumberLineEnvironment(Environment):
-    def __init__(self):
+    def __init__(self,gamma = 0.8,hill_size=2,resolution=0.1):
         # TODO: Define S, A, P, and O
         # Environment.__init__(self, S, A, P, O)
         self.v_max = 10
         self.y_max = 10
         self.p_c = 5
         self.m = 10
-        self.hill_size = 2    #TODO make input
+        self.hill_size = hill_size    #TODO make input
 
         #MDP
-        self.gamma = 0.8
+        self.gamma = gamma
+        self.resolution = resolution
 
         self.position = 0  # position
         self.velocity = 0  # velocity
         self.time = 0
+        
 
 
-        self.position_space = np.array([a for a in range(-self.y_max,self.y_max,1)])
-        self.velocity_space = np.array([a for a in range(-self.v_max,self.v_max,1)])
+        self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
         self.update_state()
 
         # define state and action spaces.We formulate based on aggregate sets
@@ -32,12 +33,20 @@ class NumberLineEnvironment(Environment):
 
         O = self.calculate_observation_set(S)            # set of all observations 
         P = self.calculate_transition_prob_set(S, A)    # set of all transtions probabilities
+        R = self.calculate_reward_set(S,A)
 
-        Environment.__init__(self, S, A, P, O)
+        Environment.__init__(self, S, A, P, O,R)
     
     def state_space_discretization(self,resolution= 0.1):
-        self.position_space = []
-        self.velocity_space = []
+        self.position_space = np.array([a for a in range(-self.y_max,self.y_max,resolution)])
+        self.velocity_space = np.array([a for a in range(-self.v_max,self.v_max,resolution)])
+
+    def get_p(self,current_state, action, next_state):
+        ##TODO add the prob determination via knn here
+        pass
+
+    def get_r(self,current_state, action, next_state):
+        return self.R[current_state][action][next_state]
     
     def action_space_discretization(self):
         pass
@@ -52,14 +61,21 @@ class NumberLineEnvironment(Environment):
         #TODO add  check to see if valid (?)
         self.state = (self.position,self.velocity)
 
-    def calculate_reward_set(self,S,A):
+    def calculate_reward_set(self, S, A):
+        ##TODO define reward function for numberline
         R = {}
         for state in S:
             for action in A:
                 for next_state in S:
                     R.setdefault(state, {})
                     R[state].setdefault(action, {})
-                    R[state][action][next_state] = 1 if self.grid[next_state] == 'D' or self.grid[next_state] == 'H' else 0
+                    if list(next_state) in self.target_coords.tolist():
+                        R[state][action][next_state] = 1
+                    elif list(next_state) in self.road_coords.tolist():
+                        R[state][action][next_state] = -1
+                    else:
+                        R[state][action][next_state] = 0
+        return R
 
     def calculate_observation_set(self,S) :
         O = {}
@@ -69,6 +85,7 @@ class NumberLineEnvironment(Environment):
         return O
 
     def h(self,position=None,velocity=None) -> int:
+        #observation of the velocity
         if position ==None:
             position=self.position
         if velocity == None:
@@ -86,7 +103,7 @@ class NumberLineEnvironment(Environment):
         return retval
 
     def _next_position(self,state):
-        retval = state[0] + state[1]*1 #time step one unit
+        retval = state[0] + state[1]*1 #time step one unit (u+vt)
         return self._check_bounds(retval,self.y_max)
     
     def calculate_transition_prob_set(self,S, A):
@@ -111,11 +128,15 @@ class NumberLineEnvironment(Environment):
             transition_mat[tuple(state)] = a_dict
         return transition_mat
                 
-    def probability_of_state(self):
+    def _probability_of_state(self):
         pass
     
-    def knn(self):
+    def _knn(self):
         pass
+
+    def possible_actions(self, present_state):
+        ##TODO fit to numberline problem
+        return self.A
     
 
     def _net_force(self, input_force) -> int:
