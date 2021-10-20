@@ -18,6 +18,10 @@ class NumberLineEnvironment(Environment):
         self.gamma = gamma
         self.resolution = resolution
 
+        #prm
+        self.prm_time_upper_bound = 2
+
+
         self.position = 0  # position
         self.velocity = 0  # velocity
         self.time = 0
@@ -53,6 +57,7 @@ class NumberLineEnvironment(Environment):
         pass
 
     def phi(self,y) -> int :
+        """potential field"""
         return self.hill_size*np.sin((2*np.pi*y)/self.y_max)
     
     def sim_input(self, t):
@@ -63,11 +68,13 @@ class NumberLineEnvironment(Environment):
         self.state = (self.position,self.velocity)
 
     def calculate_reward_set(self, S, A):
-        ##TODO Tweak the reward function
-        ## Iterating through all the states in the state space
-        ## Rewards
-        ## 1 for next state desired state
-        ## -1 for next state undesired state
+        """
+        Iterating through all the states in the state space
+        ### Rewards
+        - 1 for next state desired state
+        - v-1 for next state undesired state
+        """
+        
         R = {}
         for state in S:
             for action in A:
@@ -109,6 +116,10 @@ class NumberLineEnvironment(Environment):
     def _next_position(self,state):
         retval = state[0] + state[1]*1 #time step one unit (u+vt)
         return self._check_bounds(retval,self.y_max)
+
+    def _next_velocity(self,state,action):
+        next_velocity = state[1] + (1 / self.m) * self._net_force(action) + self._noise_dynamics(state[1])
+        return self._check_bounds(next_velocity,self.v_max)
     
     def calculate_transition_prob_set(self,S, A):
         transition_mat = {}
@@ -121,8 +132,7 @@ class NumberLineEnvironment(Environment):
                 if has_crashed:
                     next_velocity = 0
                 else:
-                    next_velocity = state[1] + (1 / self.m) * self._net_force(action) + self._noise_dynamics(state[1])
-                next_velocity =self._check_bounds(next_velocity,self.v_max)
+                    next_velocity = self._next_velocity(state, action)
                 next_position = self._next_position(state)
                 next_state= (next_position,next_velocity)
                 s_dict[next_state] = 1 #transition probability 1 for now
@@ -151,7 +161,36 @@ class NumberLineEnvironment(Environment):
         return np.random.normal(0, np.abs(0.5*v))
     
     def _noise_dynamics(self,v):
+        """
+        Speed wobble dynamics
+        """
         #TODO change to new speed wobble 
         return np.random.normal(0, np.abs(0.1*v))
-        
+    
+    def possible_actions(self):
+        return self.A
+    
+    ## PRM ###############
+    ##--------------------------------------------------------- 
+    # Two points in state space can be connected if there exists a constant input fi that drives the initial state to the final state (over some upper-bounded duration of time)
+
+    def PRM(self):
+        pass
+
+    def _motion_edge(self,current_state,next_state):
+        """
+        Two points in state space can be connected if there exists a constant input fi that drives the initial state to the final state (over some upper-bounded duration of time)
+
+        Input = f_net
+
+        Return:
+            True if transition exists \\
+            False is not
+
+        """
+
+
+
+
+
    
