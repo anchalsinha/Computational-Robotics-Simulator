@@ -1,13 +1,14 @@
 import numpy as np
 
 class ChessboardEnvironment:
-    def __init__(self, board):
+    def __init__(self, board, initial_state):
         '''
         Define discrete state space system configuration from the defined grid. In the grid array,
         walls are defined as '1', empty spaces as '0'
         '''
         self.board = board
-
+        self.initial_state = initial_state
+        
         self.obstacle_coords = np.array(np.where(board == 1)).T
         self.rows, self.cols = board.shape
 
@@ -15,12 +16,6 @@ class ChessboardEnvironment:
         self.S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
         self.A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
         self.graph = self.generate_graphs(self.S, self.A)
-
-    def get_vertices(self, S, A):
-        pass
-
-    def get_edges(self, S):
-        pass
 
     def generate_graph(self, states, actions):
         graph = {}
