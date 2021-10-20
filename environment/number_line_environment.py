@@ -20,6 +20,7 @@ class NumberLineEnvironment(Environment):
 
         #prm
         self.prm_time_upper_bound = 2
+        
 
 
         self.position = 0  # position
@@ -118,6 +119,12 @@ class NumberLineEnvironment(Environment):
         return self._check_bounds(retval,self.y_max)
 
     def _next_velocity(self,state,action):
+        """
+        Velocity of next state \\
+            - Influence of net force 
+            - Influence of noise due to system dynamics
+            - Checks bounds
+        """
         next_velocity = state[1] + (1 / self.m) * self._net_force(action) + self._noise_dynamics(state[1])
         return self._check_bounds(next_velocity,self.v_max)
     
@@ -154,6 +161,9 @@ class NumberLineEnvironment(Environment):
     
 
     def _net_force(self, input_force) -> int:
+        """The net force \\
+           Input force + force exerted by loc in the potential field
+        """
         f_net = int(input_force + derivative(self.phi, self.state[0]) )
         return f_net
     
@@ -177,7 +187,7 @@ class NumberLineEnvironment(Environment):
     def PRM(self):
         pass
 
-    def _motion_edge(self,current_state,next_state):
+    def _motion_edge(self,current_state,next_state,action):
         """
         Two points in state space can be connected if there exists a constant input fi that drives the initial state to the final state (over some upper-bounded duration of time)
 
@@ -188,7 +198,10 @@ class NumberLineEnvironment(Environment):
             False is not
 
         """
-
+        for action in range(-1,1):
+            next_position = self._next_position(current_state)
+            next_velocity = self._next_velocity(current_state,action)
+        
 
 
 
