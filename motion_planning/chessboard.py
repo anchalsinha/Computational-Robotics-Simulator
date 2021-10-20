@@ -11,17 +11,22 @@ class ChessboardEnvironment:
         self.obstacle_coords = np.array(np.where(board == 1)).T
         self.rows, self.cols = board.shape
 
+        self.graph = self.generate_graphs(self.S, self.A)
         # define state and action spaces
         S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
         A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
-
-
 
     def get_vertices(self, S, A):
         pass
 
     def get_edges(self, S):
         pass
+
+    def generate_graph(self, states, actions):
+        graph = {}
+        for state in states:
+            graph[state] = self.possible_jumps(actions, state)
+        return graph
 
     def possible_jumps(self, A, present_state):
         '''
