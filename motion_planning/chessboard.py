@@ -11,23 +11,25 @@ class ChessboardEnvironment:
         self.obstacle_coords = np.array(np.where(board == 1)).T
         self.rows, self.cols = board.shape
 
-        self.graph = self.generate_graphs(self.S, self.A)
         # define state and action spaces
-        S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
-        A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
-
-    def get_vertices(self, S, A):
-        pass
-
-    def get_edges(self, S):
-        pass
+        self.S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
+        self.A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
+        self.graph = self.generate_graphs(self.S, self.A)
+        self.visited = []
+        self.queue = []
 
     def generate_graph(self, states, actions):
         graph = {}
         for state in states:
             graph[state] = self.possible_jumps(actions, state)
         return graph
-
+    def bfs(self, visited, graph, node, queue):
+        visited.append(node)
+        queue.append(graph[node][:])
+        path = []
+        while queue:
+            pass
+        return path
     def possible_jumps(self, A, present_state):
         '''
         List all possible movements from the current state as to not select a wall or boundary as the 
