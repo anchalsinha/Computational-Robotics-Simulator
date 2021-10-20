@@ -11,10 +11,10 @@ class ChessboardEnvironment:
         self.obstacle_coords = np.array(np.where(board == 1)).T
         self.rows, self.cols = board.shape
 
-        self.graph = self.generate_graphs(self.S, self.A)
         # define state and action spaces
-        S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
-        A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
+        self.S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
+        self.A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
+        self.graph = self.generate_graphs(self.S, self.A)
 
     def get_vertices(self, S, A):
         pass
