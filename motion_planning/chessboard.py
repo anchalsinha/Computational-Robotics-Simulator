@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class ChessboardEnvironment:
     def __init__(self, board, initial_state):
@@ -44,5 +45,10 @@ class ChessboardEnvironment:
                 if self.grid[jump_y, jump_x] != '1' and (self.grid[jump_y, jump_x] == '0' or np.array([jump_y, jump_x]) in self.target_coords):
                     possible_jumps.append((jump_y, jump_x))
         return possible_jumps
+    def sample_board(self,present_state):
+        
+        sample_state = (random.randint(0,self.rows),random.randint(0,self.cols))
+
+        return sample_state
 
     
