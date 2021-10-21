@@ -39,7 +39,7 @@ class NumberLineEnvironment(Environment):
         A = [-1,0,1]                                   # set of all actions
 
         O = self.calculate_observation_set(S)            # set of all observations
-        P = self.calculate_transition_prob_set(S, A)    # set of all transtions probabilities
+        P = self.calculate_discrete_transition_probability_set(S, A)    # set of all transtions probabilities
         R = self.calculate_reward_set(S,A)
 
         Environment.__init__(self, S, A, P, O,R)
@@ -52,7 +52,13 @@ class NumberLineEnvironment(Environment):
 
     def get_p(self,current_state, action, next_state):
         ##TODO add the prob determination via knn here
-        pass
+        try:
+            retval = self.P[current_state][action][next_state]
+            
+        except KeyError as e:
+            print(current_state, action, next_state)
+            retval =0 
+        return retval
 
     def get_r(self,current_state, action, next_state):
         return self.R[current_state][action][next_state]
@@ -138,11 +144,12 @@ class NumberLineEnvironment(Environment):
         else:
             next_velocity = self._next_velocity(state, action)
         next_position = self._next_position(state)
-        next_state = (next_posiiton, next_velocity)
+        next_state = (next_position, next_velocity)
         return next_state
 
 
     def calculate_transition_prob_set(self,S, A):
+        """depreciated"""
         transition_mat = {}
         for state in S: #current State
             a_dict = {}
@@ -163,20 +170,21 @@ class NumberLineEnvironment(Environment):
         return transition_mat
 
     def calculate_discrete_transition_probability_set(self, S, A):
+        """Returns the transition probability matrix"""
         samples = 100
         discrete_transition_dict = {}
         # Initialize the probability set with zero
         for state in S:
             for action in A:
                 for new_state in S:
-                    dicreter_transition_dict[(state,action,new_state)] = 0.0
+                    discrete_transition_dict[(state,action,new_state)] = 0.0
 
         for state in S:
             for action in A:
-                possiblity_next_states = {}
+                possible_next_states = {}
                 for i in range(samples):
                     # iterate the system dynamics 100 times form (S(i),A(i))
-                    next_state = next_state(state, action)
+                    next_state = self._next_state(state, action)
                     if next_state in possible_next_states:
                         possible_next_states[next_state] = possible_next_states[next_state] + 1
                     else:
