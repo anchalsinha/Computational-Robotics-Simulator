@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from scipy.misc import derivative
+import pdb
 
 from .base_environment import Environment
 
@@ -123,26 +124,61 @@ class NumberLineEnvironment(Environment):
         next_velocity = state[1] + (1 / self.m) * self._net_force(action) + self._noise_dynamics(state[1])
         return self._check_bounds(next_velocity,self.v_max)
 
+    def _next_state(self, state, action):
+        has_crashed = random.uniform(0, 1) < ((np.abs(state[1])) * self.p_c)/self.v_max
+        if has_crashed:
+            next_velocity = 0.0
+        else:
+            next_velocity = self._next_velocity(state, action)
+        next_position = self._next_position(state)
+        next_state = (next_posiiton, next_velocity)
+        return next_state
+
+
     def calculate_transition_prob_set(self,S, A):
         transition_mat = {}
         for state in S: #current State
-            has_crashed = random.uniform(0, 1) < ((np.abs(state[1])) * self.p_c)/self.v_max
-            a_dict ={}
+            a_dict = {}
             for action in A:  #current action
                 s_dict = {}
-
+                has_crashed = random.uniform(0, 1) < ((np.abs(state[1])) * self.p_c)/self.v_max
                 if has_crashed:
                     next_velocity = 0
                 else:
                     next_velocity = self._next_velocity(state, action)
                 next_position = self._next_position(state)
-                next_state= (next_position,next_velocity)
+                next_state = (next_position,next_velocity)
                 s_dict[next_state] = 1 #transition probability 1 for now
                 # calculate prob here, from the output of the sys dynamincs equation using it with the probability bins (another function) to calculate p, using knn
 
                 a_dict[action] = s_dict
             transition_mat[tuple(state)] = a_dict
         return transition_mat
+
+    def calculate_discrete_transition_probability_set(self, S, A):
+        samples = 100
+        discrete_transition_dict = {}
+        # Initialize the probability set with zero
+        for state in S:
+            for action in A:
+                for new_state in S:
+                    dicreter_transition_dict[(state,action,new_state)] = 0.0
+
+        for state in S:
+            for action in A:
+                possiblity_next_states = {}
+                for i in range(samples):
+                    # iterate the system dynamics 100 times form (S(i),A(i))
+                    next_state = next_state(state, action)
+                    if next_state in possible_next_states:
+                        possible_next_states[next_state] = possible_next_states[next_state] + 1
+                    else:
+                        possible_next_states[next_state] = 1
+                # Populate the transition dictionary
+                for a_next_state in possible_next_states:
+                    normalized_prob = possible_next_states[a_next_state]/samples*100.0
+                    discrete_transition_dict[(state,action,a_next_state)] = normalized_prob
+        return discrete_transition_dict
 
     def _probability_of_state(self):
         pass
@@ -170,6 +206,10 @@ class NumberLineEnvironment(Environment):
         return np.random.normal(0, np.abs(0.1*v))
 
     def possible_actions(self):
+        return self.A
+
+    # Overload
+    def possible_actions(self, state):
         return self.A
 
     ## PRM ###############
