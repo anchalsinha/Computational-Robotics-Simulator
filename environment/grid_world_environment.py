@@ -6,13 +6,16 @@ class GridworldEnvironment(Environment):
     def __init__(self, grid, Pe):
         '''
         Define discrete state space system configuration from the defined grid. In the grid array,
-        walls are defined as '1', empty spaces as '0', and targets as a characters ('D' and 'S')
+        walls are defined as '1', empty spaces as '0', targets as a characters ('D' and 'S'), and 
+        roads as a character 'W', 
         '''
+        # define problem-specific parameters
         self.grid = grid
         self.Pe = Pe
 
         self.target_coords = np.array(np.where((grid == 'D') | (grid == 'S'))).T
-        self.road_coords = np.array(np.where((grid == '2'))).T
+        self.road_coords = np.array(np.where((grid == 'W'))).T
+        self.reward_coords = np.concatenate([self.target_coords, self.road_coords])
         self.rows, self.cols = grid.shape
 
         # define state and action spaces
@@ -27,6 +30,9 @@ class GridworldEnvironment(Environment):
         Environment.__init__(self, S, A, P, O, R)
 
     def calculate_reward_set(self, S, A):
+        '''
+        Initialize R for all (state, action, next state) triplets as a triple-nested dictionary
+        '''
         R = {}
         for state in S:
             for action in A:
@@ -42,6 +48,9 @@ class GridworldEnvironment(Environment):
         return R
 
     def calculate_observation_set(self, S):
+        '''
+        Initialize O for all s in S as a dictionary
+        '''    
         O = {}
         for state in S:
             h = np.mean(np.linalg.norm(np.subtract(self.target_coords, state), axis=1))
@@ -51,10 +60,10 @@ class GridworldEnvironment(Environment):
 
     def possible_jumps(self, A, present_state):
         '''
-        List all possible movements from the current state as to not select a wall or boundary as the 
+        Return all possible next states from the current state as to not select a wall or boundary as the 
         next state.
         '''
-        possible_jumps= []
+        possible_jumps = []
         for a in A:
             jump_y = present_state[0] + a[0]
             jump_x = present_state[1] + a[1]
@@ -64,6 +73,9 @@ class GridworldEnvironment(Environment):
         return possible_jumps
 
     def possible_actions(self, present_state):
+        '''
+        Return all possible actions for all next states in the set of possible next states (aka possible_jumps)
+        '''
         return [(next_state[0] - present_state[0], next_state[1] - present_state[1]) for next_state in self.possible_jumps(self.A, present_state)]
 
     def calculate_transition_prob_set(self, S, A):
@@ -71,31 +83,31 @@ class GridworldEnvironment(Environment):
         Calculates the transition probability set. The data type is a triple-nested dictionary to 
         represent the input triplet (state, action, next state) determining the transition probability
         '''
-        transition_mat = {}
+        transition_prob_dict = {}
         for s in S: # current state
             if self.grid[s] == '1':
                 continue
 
-            list_possible_jumps = self.possible_jumps(A, s)
-            a_dic ={}
+            possible_jumps_list = self.possible_jumps(A, s)
+            a_dict = {}
 
             for a in A: # current action
                 s_dict = {}
                 desired_state = tuple(np.add(s, a))
-                invalid = tuple(desired_state) not in list_possible_jumps # check if desired state is invalid
+                invalid = desired_state not in possible_jumps_list # check if desired state is invalid
 
                 for s_ in S: # next state
                     if invalid and s_ == s: # if invalid desired state and s_ is current state
                         s_dict[s_] = 1
                     elif not invalid and desired_state == s_: # if not invalid desired state and s_ is desired state
                         s_dict[s_] = float(1-self.Pe)
-                    elif not invalid and s_ in list_possible_jumps: # if not invalid desired state and s_ is valid
-                        s_dict[s_] = self.Pe/(len(list_possible_jumps)-1)
+                    elif not invalid and s_ in possible_jumps_list: # if not invalid desired state and s_ is valid
+                        s_dict[s_] = self.Pe/(len(possible_jumps_list)-1)
                     else:
                         s_dict[s_] = 0
-                a_dic[a]= s_dict
-            transition_mat[tuple(s)]  = a_dic
-        return transition_mat
+                a_dict[a] = s_dict
+            transition_prob_dict[tuple(s)] = a_dict
+        return transition_prob_dict
     
     def visualize(self, states, policy):
         print("Policy: ")
@@ -118,7 +130,7 @@ class GridworldEnvironment(Environment):
         for i in range(len(self.grid)):
             row = '|'
             for j in range(len(self.grid[0])):
-                row += f'{self.get_r((0,0),(0,0),(i, j))}|'
+                row += f'{self.get_reward((0,0),(0,0),(i, j))}|'
             print(row)
 
         for i in range(len(self.grid)):
@@ -136,19 +148,24 @@ class GridworldEnvironment(Environment):
 
         print('\n\n\n')
 
-    def get_p(self, state, action, next_state):
-        # return self.P.get(state, {}).get(action, {}).get(next_state, 0)
-        list_possible_jumps = self.possible_jumps(self.A, state)
+    def get_prob(self, state, action, next_state):
+        '''
+        Return the probability of transitioning to next state given state and action
+        '''
+        possible_jumps_list = self.possible_jumps(self.A, state)
         desired_state = tuple(np.add(state, action))
-        invalid = tuple(desired_state) not in list_possible_jumps 
+        invalid = desired_state not in possible_jumps_list 
         if invalid and state == next_state: # if invalid desired state and s_ is current state
             return 1
         elif not invalid and desired_state == next_state: # if not invalid desired state and s_ is desired state
             return float(1 - self.Pe)
-        elif not invalid and next_state in list_possible_jumps: # if not invalid desired state and s_ is valid
-            return self.Pe/(len(list_possible_jumps)-1)
+        elif not invalid and next_state in possible_jumps_list: # if not invalid desired state and s_ is valid
+            return self.Pe/(len(possible_jumps_list)-1)
         else:
             return 0
 
-    def get_r(self, state, action, next_state):
+    def get_reward(self, state, action, next_state):
+        '''
+        Return the reward for the input triplet (state, action, next state) 
+        '''      
         return self.R[state][action][next_state]

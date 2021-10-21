@@ -35,24 +35,23 @@ listener = keyboard.Listener(on_press=keyboardCallback)
 listener.start()
 
 
-
+# Grid Input:
 # 0 - empty
 # 1 - wall
-# characters (i.e. 'D' and 'S') - target
-# TODO: different indication of road which will have negative reward
+# 'D' and 'S' - targets
+# 'W' - road
 grid = np.array([
-    [0, 0, 0, 0, 1],
-    [0, 1, 1, 0, 1],
-    [0, 0, 'D', 0, 1],
-    [0, 1, 1, 0, 1],
-    [0, 0, 'S', 0, 1],
+    [0, 0, 0, 0, 'W'],
+    [0, 1, 1, 0, 'W'],
+    [0, 0, 'D', 0, 'W'],
+    [0, 1, 1, 0, 'W'],
+    [0, 0, 'S', 0, 'W'],
 ])
 Pe = 0.3 # error probability
 initial_state = (0, 2) # initial state assuming that this state lies in an empty cell on the grid
 
-
+# Run simulator
 gridworld_environment = GridworldEnvironment(grid, Pe)
-
 gridworld_simulator = Simulator(gridworld_environment, initial_state)
 gridworld_environment.visualize([gridworld_simulator.state])
 
