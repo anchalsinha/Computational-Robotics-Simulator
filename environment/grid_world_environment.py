@@ -6,8 +6,8 @@ class GridworldEnvironment(Environment):
     def __init__(self, grid, Pe):
         '''
         Define discrete state space system configuration from the defined grid. In the grid array,
-        walls are defined as '1', empty spaces as '0', targets as a characters ('D' and 'S'), and 
-        roads as a character 'W', 
+        walls are defined as '1', empty spaces as '0', targets as characters ('D' and 'S'), and 
+        roads as character 'W', 
         '''
         # define problem-specific parameters
         self.grid = grid
