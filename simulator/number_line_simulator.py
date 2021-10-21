@@ -47,6 +47,10 @@ class NumberlineSimulator(Simulator):
     
     
     def run_policy(self, policy):
+        # keyboard listener in background thread
+        listener = keyboard.Listener(on_press=self.keyboardCallback)
+        listener.start()
+
         while not self.exitProgram:
             self.nextStep(policy[self.state])
             self.visualize()

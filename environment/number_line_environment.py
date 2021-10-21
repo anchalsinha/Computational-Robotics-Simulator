@@ -179,8 +179,11 @@ class NumberLineEnvironment(Environment):
         #TODO change to new speed wobble
         return np.random.normal(0, np.abs(0.1*v))
 
-    def possible_actions(self):
+    def possible_actions(self,a):
         return self.A
+    
+    def possible_jumps(self,actions,state):
+        return self.S
 
     ## PRM ###############
     ##---------------------------------------------------------
