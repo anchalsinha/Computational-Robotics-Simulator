@@ -1,6 +1,15 @@
 import numpy as np
 import random
 
+class RRTVertex:
+    def __init__(self, state, parent):
+        self.state = state
+        self.parent = parent
+        self.adjacent = []
+    
+    def add_edge(self, adjacent_state):
+        self.adjacent.append(adjacent_state)
+
 class ChessboardEnvironment:
     def __init__(self, board, initial_state):
         '''
