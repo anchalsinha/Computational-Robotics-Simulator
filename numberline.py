@@ -12,7 +12,10 @@ initial_state =  (ymax,0)
 
 numberline_simulator = NumberlineSimulator(numberline_environment,initial_state)
 
-numberline_mdp = MDP(numberline_environment)
-numberline_policy = numberline_mdp.value_iteration(0.01)
+path = numberline_environment.rrt((-2, -2), (3, 4))
+print(path)
 
-numberline_simulator.run_policy(numberline_policy)
+# numberline_mdp = MDP(numberline_environment)
+# numberline_policy = numberline_mdp.value_iteration(0.01)
+
+# numberline_simulator.run_policy(numberline_policy)

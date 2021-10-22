@@ -147,6 +147,81 @@ class NumberLineEnvironment(Environment):
         next_state = (next_position, next_velocity)
         return next_state
 
+    def a_star(self, start, end, vertices):
+        def h(end, next):
+            # TODO: try manhattan distance
+            # return np.linalg.norm(end - next)
+            return 0
+
+
+        start = tuple(start)
+        end = tuple(end)
+
+        from queue import PriorityQueue
+        queue = PriorityQueue()
+        queue.put(start, 0)
+        came_from = {start: None}
+        cost = {start: 0}
+
+        while not queue.empty():
+            current = queue.get()
+
+            if current == end:
+                return None
+
+            for vertex in vertices[current]:
+                weight = np.linalg.norm(np.subtract(vertex, current))
+                updated_cost = cost[current] + weight
+                if vertex not in cost or updated_cost < cost[vertex]:
+                    cost[vertex] = updated_cost
+                    queue.put(vertex, updated_cost + h(end, vertex))
+                    came_from[vertex] = current
+
+        print(came_from)
+        current = end
+        path = [current]
+        while current != start:
+            current = came_from[current]
+            path.append(current)
+
+        path.reverse()
+        
+        return path
+
+    def is_connected(self, n1, n2):
+        f_i = self.m * ((n2[1]**2 - n1[1]**2) / 2)/(n2[0]-n1[0])
+        can_reach = n1[0] + n1[1]*self.t_max + (1/2)*(f_i / self.m) * self.t_max**2
+        return -1 <= f_i <= 1 and can_reach > n2[0]
+
+    def drive(self, start, end):
+        # consider obstacles
+        return (start[0] + 0.1, start[1] + 0.1)
+
+
+    def rrt(self, start, end):
+        # from scipy import spatial
+        # tree = spatial.KDTree([(start)])
+        vertices = {}
+
+        vertices[start] = []
+
+        def get_nearest(vertex):
+            distances = [(end_vertex, np.linalg.norm(np.subtract(vertex, end_vertex))) for end_vertex in vertices.keys()]
+            return min(distances, key=lambda x: x[1])[0]
+
+        while True:
+            rand_vertex = random.uniform(-self.y_max , self.y_max), random.uniform(-self.v_max , self.v_max)
+            nearest_vertex = get_nearest(rand_vertex)
+            print(rand_vertex, nearest_vertex)
+            if (new_vertex := self.drive(nearest_vertex, rand_vertex)) is not None:
+                vertices[tuple(new_vertex)] = []
+                vertices[nearest_vertex].append(tuple(new_vertex))
+                print(new_vertex)
+                if self.is_connected(new_vertex, end):
+                    vertices[tuple(new_vertex)].append(tuple(end))
+                    break
+
+        return self.a_star(start, end, vertices)
 
     def calculate_transition_prob_set(self,S, A):
         """depreciated"""
@@ -254,9 +329,3 @@ class NumberLineEnvironment(Environment):
         for action in range(-1,1):
             next_position = self._next_position(current_state)
             next_velocity = self._next_velocity(current_state,action)
-        
-
-
-
-
-   
