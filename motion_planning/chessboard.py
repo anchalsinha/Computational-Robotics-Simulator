@@ -34,13 +34,68 @@ class ChessboardEnvironment:
         for state in states:
             graph[state] = self.possible_jumps(actions, state)
         return graph
-    def bfs(self, visited, graph, node, queue):
-        visited.append(node)
-        queue.append(graph[node][:])
+    def backtrace(self,start_node,end_node, parents):
         path = []
-        while queue:
-            pass
+        current_node = end_node
+        while current_node is not start_node:
+            path.append(parents[current_node])
+            current_node = parents[current_node]
+
         return path
+    def bfs(self, graph, node):
+        queue = []
+        visited = []
+        parent = {}
+        queue.append(node)
+        while queue:
+            current_node = queue.pop()
+            if self.board[current_node]  == 'G':
+                return self.backtrace(node,current_node, parent )
+            else:
+                neighbours = graph[current_node]
+                for n in neighbours:
+                    if n not in visited:
+                        parent[n] = current_node
+                        queue.append(n)
+                        visited.append(n)
+        return []
+
+
+    def a_star(self, start, end, actions):
+
+        def h(end, next):
+            # TODO: try manhattan distance
+            return np.linalg.norm(end - next)
+
+        from queue import PriorityQueue
+        queue = PriorityQueue()
+        queue.put(start, 0)
+        came_from = {start: None}
+        cost = {start: 0}
+
+        while not queue.empty():
+            current = queue.get()
+
+            if current == end:
+                return None
+
+            for vertex in self.possible_jumps(actions, current):
+                weight = 1 # TODO: Define weight of edge
+                updated_cost = cost[current] + weight
+                if vertex not in cost or updated_cost < cost[vertex]:
+                    cost[vertex] = updated_cost
+                    queue.put(vertex, updated_cost + h(end, vertex))
+                    came_from[vertex] = current
+
+        current = end
+        path = [current]
+        while current != start:
+            current = came_from[current]
+            path.append(current)
+
+        path.reverse()
+        return path
+
     def possible_jumps(self, A, present_state):
         '''
         List all possible movements from the current state as to not select a wall or boundary as the 
