@@ -19,13 +19,14 @@ class ChessboardEnvironment:
         self.board = board
         self.initial_state = initial_state
 
-        self.obstacle_coords = np.array(np.where(board == 1)).T
+        ##self.obstacle_coords = np.array(np.where(board == 1)).T
         self.rows, self.cols = board.shape
+        self.target_coords = np.array(np.where((board == 'G') )).T
 
         # define state and action spaces
         self.S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
         self.A = [(2, -1), (2, 1), (-2, -1), (-2, 1), (1, -2), (1, 2), (-1, -2), (-1, 2)]
-        self.graph = self.generate_graphs(self.S, self.A)
+        self.graph = self.generate_graph(self.S, self.A)
         self.visited = []
         self.queue = []
 
@@ -40,16 +41,20 @@ class ChessboardEnvironment:
         while current_node is not start_node:
             path.append(parents[current_node])
             current_node = parents[current_node]
-
-        return path
+        return path[::-1]
     def bfs(self, graph, node):
         queue = []
         visited = []
         parent = {}
         queue.append(node)
+        visited.append(node)
         while queue:
-            current_node = queue.pop()
-            if self.board[current_node]  == 'G':
+            self.visualize(self.board,visited)
+            current_node = queue.pop(0)
+            print(current_node)
+            if current_node == (2,3):
+                print(current_node ,self.board[3,3] == 'G')
+            if self.board[current_node[0], current_node[1]] == 'G':
                 return self.backtrace(node,current_node, parent )
             else:
                 neighbours = graph[current_node]
@@ -60,6 +65,24 @@ class ChessboardEnvironment:
                         visited.append(n)
         return []
 
+    def visualize(self, states, path):
+        for i in range(len(self.board)):
+            row = '|'
+            for j in range(len(self.board[0])):
+                if (i,j) in path:
+                    row +=' T |'
+                    continue
+                if (i, j) in states:
+                    row += ' O |'
+                elif self.board[i, j] == '0':
+                    row += ' _ |'
+                elif self.board[i, j] == '1':
+                    row += ' X |'
+                else:
+                    row += f' {self.board[i, j]} |'
+            print(row)
+
+        print('\n\n\n')
 
     def a_star(self, start, end, actions):
 
@@ -106,13 +129,10 @@ class ChessboardEnvironment:
             jump_y = present_state[0] + a[0]
             jump_x = present_state[1] + a[1]
             if jump_y >= 0 and jump_y < self.rows and jump_x >= 0 and jump_x < self.cols:
-                if self.grid[jump_y, jump_x] != '1' and (self.grid[jump_y, jump_x] == '0' or np.array([jump_y, jump_x]) in self.target_coords):
+                if self.board[jump_y, jump_x] != '1' and (self.board[jump_y, jump_x] == '0' or np.array([jump_y, jump_x]) in self.target_coords):
                     possible_jumps.append((jump_y, jump_x))
         return possible_jumps
     def sample_board(self,present_state):
         
         sample_state = (random.randint(0,self.rows),random.randint(0,self.cols))
-
         return sample_state
-
-    
