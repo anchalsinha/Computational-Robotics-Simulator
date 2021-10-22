@@ -135,4 +135,36 @@ class ChessboardEnvironment:
     def sample_board(self,present_state):
         
         sample_state = (random.randint(0,self.rows),random.randint(0,self.cols))
+
         return sample_state
+
+    def p_norm(self, s1, s2, p=2):
+        return np.linalg.norm(np.array(s1)-np.array(s2), p)
+
+    def steer(self, s_rand, s_near):
+        jumps = []
+        one_jumps = [[s_near, s_next] for s_next in self.possible_jumps(self.A, s_near)]
+        for one_jump in one_jumps:
+            jumps.append(one_jump)
+            next_jumps = self.possible_jumps(self.A, one_jump[-1])
+            for next_jump in next_jumps:
+                jumps.append(one_jump + [next_jump])
+
+        min_dist = np.Inf
+        best_jump = None
+
+        for jump in jumps:
+            curr_dist = self.p_norm(jump[-1], s_rand)
+            if curr_dist < min_dist:
+                min_dist = curr_dist
+                best_jump = jump
+
+        node1 = RRTVertex(best_jump[1], best_jump[0])
+        if len(best_jump) > 2:
+            node1.add_edge(best_jump[2])
+            node2 = RRTVertex(best_jump[2], best_jump[1])
+
+        # add nodes to rrt
+
+
+
