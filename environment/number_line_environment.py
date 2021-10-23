@@ -12,7 +12,7 @@ class NumberLineEnvironment(Environment):
         self.v_max = 10
         self.y_max = 10
         self.p_c = 5
-        self.m = 10
+        self.m = 0.5
         self.hill_size = hill_size    #TODO make input
 
         #MDP
@@ -147,63 +147,95 @@ class NumberLineEnvironment(Environment):
         next_state = (next_position, next_velocity)
         return next_state
 
-    def a_star(self, start, end, vertices):
-        def h(end, next):
-            # TODO: try manhattan distance
-            # return np.linalg.norm(end - next)
-            return 0
 
+ # np.linalg.norm(np.subtract(vertex, current))
+       
+    def heuristic(self, a, b):
+        (x1, y1) = a
+        (x2, y2) = b
+        return abs(x1 - x2) + abs(y1 - y2)
 
-        start = tuple(start)
-        end = tuple(end)
-
-        from queue import PriorityQueue
-        queue = PriorityQueue()
-        queue.put(start, 0)
-        came_from = {start: None}
-        cost = {start: 0}
-
-        while not queue.empty():
-            current = queue.get()
-
-            if current == end:
-                return None
-
-            for vertex in vertices[current]:
-                weight = np.linalg.norm(np.subtract(vertex, current))
-                updated_cost = cost[current] + weight
-                if vertex not in cost or updated_cost < cost[vertex]:
-                    cost[vertex] = updated_cost
-                    queue.put(vertex, updated_cost + h(end, vertex))
-                    came_from[vertex] = current
-
-        print(came_from)
-        current = end
+    def reconstruct_path(self, came_from, start, goal):
+        current = goal
         path = [current]
         while current != start:
             current = came_from[current]
             path.append(current)
-
         path.reverse()
-        
         return path
+    
+    def a_star(self, graph, start, goal):
+        from queue import PriorityQueue
+        frontier = PriorityQueue()
+        frontier.put(start, 0)
+        came_from = {start: None}
+        cost_so_far = {start: 0}
+
+        while not frontier.empty():
+            current = frontier.get()
+
+            if current == goal:
+                break
+
+            for next in graph[current]:
+                new_cost = cost_so_far[current] + self.heuristic(current, next)
+                if next not in cost_so_far or new_cost < cost_so_far[next]:
+                    cost_so_far[next] = new_cost
+                    priority = new_cost + self.heuristic(goal, next)
+                    frontier.put(next, priority)
+                    came_from[next] = current
+
+        return came_from, cost_so_far
+
+    def bfs(self, graph, start, goal):
+        from queue import Queue
+        frontier = Queue()
+        frontier.put(start)
+        came_from = {start: True}
+
+        while not frontier.empty():
+            current = frontier.get()
+
+            # Early exit
+            if current == goal:
+                break
+
+            print('Visiting {}'.format(current))
+            for next in graph[current]:
+                if next not in came_from:
+                    frontier.put(next)
+                    came_from[next] = True
+
+        return came_from
 
     def is_connected(self, n1, n2):
-        f_i = self.m * ((n2[1]**2 - n1[1]**2) / 2)/(n2[0]-n1[0])
-        can_reach = n1[0] + n1[1]*self.t_max + (1/2)*(f_i / self.m) * self.t_max**2
-        return -1 <= f_i <= 1 and can_reach > n2[0]
+        x0, v0 = n1
+        x, v = n2
+        a = 2
+        
+        if x == x0 and v == v0:
+            return True
+
+        try:
+            f_i = ((1/2)*self.m*v**2 - (1/2)*self.m*v0**2 + a*np.sin(x0) - a*np.sin(x)) / (x - x0)
+        except ZeroDivisionError:
+            f_i = 0
+
+        return -1 <= f_i <= 1
+
 
     def drive(self, start, end):
-        # consider obstacles
-        return (start[0] + 0.1, start[1] + 0.1)
+        pos_dir = 1 if end[0] - start[0] > 0 else -1
+        vel_dir = 1 if end[1] - start[1] > 0 else -1
+        return (start[0] + pos_dir * 0.5, start[1] + vel_dir * 0.5)
 
 
     def rrt(self, start, end):
-        # from scipy import spatial
-        # tree = spatial.KDTree([(start)])
-        vertices = {}
+        start = tuple(start)
+        end = tuple(end)
 
-        vertices[start] = []
+        vertices = {}
+        vertices[start] = set()
 
         def get_nearest(vertex):
             distances = [(end_vertex, np.linalg.norm(np.subtract(vertex, end_vertex))) for end_vertex in vertices.keys()]
@@ -212,16 +244,16 @@ class NumberLineEnvironment(Environment):
         while True:
             rand_vertex = random.uniform(-self.y_max , self.y_max), random.uniform(-self.v_max , self.v_max)
             nearest_vertex = get_nearest(rand_vertex)
-            print(rand_vertex, nearest_vertex)
-            if (new_vertex := self.drive(nearest_vertex, rand_vertex)) is not None:
-                vertices[tuple(new_vertex)] = []
-                vertices[nearest_vertex].append(tuple(new_vertex))
-                print(new_vertex)
+            if (new_vertex := self.drive(nearest_vertex, rand_vertex)) is not None and self.is_connected(nearest_vertex, new_vertex):
+                vertices[new_vertex] = set()
+                vertices[nearest_vertex].add(new_vertex)
                 if self.is_connected(new_vertex, end):
-                    vertices[tuple(new_vertex)].append(tuple(end))
+                    vertices[new_vertex].add(end)
                     break
-
-        return self.a_star(start, end, vertices)
+        
+        # came_from = self.bfs(vertices, start, end)
+        came_from, _ = self.a_star(vertices, start, end)
+        return self.reconstruct_path(came_from, start, end)
 
     def calculate_transition_prob_set(self,S, A):
         """depreciated"""
