@@ -225,10 +225,8 @@ class NumberLineEnvironment(Environment):
 
 
     def drive(self, start, end):
-        pos_dir = 1 if end[0] - start[0] > 0 else -1
-        vel_dir = 1 if end[1] - start[1] > 0 else -1
-        return (start[0] + pos_dir * 0.5, start[1] + vel_dir * 0.5)
-
+        theta = np.arctan2(end[1] - start[1], end[0] - start[0])
+        return start[0] + random.uniform(0, 10) * np.cos(theta), start[1] + random.uniform(0, 10) * np.cos(theta)
 
     def rrt(self, start, end):
         start = tuple(start)

@@ -12,7 +12,7 @@ initial_state =  (ymax,0)
 
 numberline_simulator = NumberlineSimulator(numberline_environment,initial_state)
 
-path = numberline_environment.rrt((-2, -2), (3, 4))
+path = numberline_environment.rrt((-10, 4), (0, 0))
 print(path)
 
 # numberline_mdp = MDP(numberline_environment)
