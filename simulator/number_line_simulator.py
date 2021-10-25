@@ -5,7 +5,11 @@ from pynput import keyboard
 from .base_simulator import Simulator
 
 class NumberlineSimulator(Simulator):
-    # TODO: Implement this function
+
+    def __init__(self, environment, initial_state):
+        super().__init__(environment, initial_state)
+        self.state = initial_state
+
     def visualize(self):
         nline = self.environment.position_space
         for i in range(len(nline)):
