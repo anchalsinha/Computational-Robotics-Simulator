@@ -22,7 +22,15 @@ Three properties define the gridworld environment: the grid (i.e. walls, dimensi
 All three of these properties will be defined in the 'gridworld.py' file
 
 #### Numberline
-TODO
+The properties that can be changed are the following, passing as arguments to the NumberlineEnvironment class
+|  Parameter| Description  | Default Value  |   
+|---|---|---|
+|  gamma |  | 0.8  |   
+|  hill_size |  Hill size of the numberline |2   |   
+| resolution  | Resolution of the state space  |  0.9 |   
+| target_state  |  Target coordinate and velocity  |  (0,0)|   
+| y_max  | Maximum cooridinate on the number line (position)  | 10  |   
+| v_max  | Maximum Velocity  | 10  |   
 
 
 ## Architecture
