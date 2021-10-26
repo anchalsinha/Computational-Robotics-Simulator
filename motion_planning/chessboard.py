@@ -142,10 +142,20 @@ class ChessboardEnvironment:
         return np.linalg.norm(np.array(s1)-np.array(s2), p)
 
     def steer(self, s_rand, s_near):
+        """
+        s_rand is a state tuple (y, x)
+        s_near is an RRTVertex object
+        """
         jumps = []
-        one_jumps = [[s_near, s_next] for s_next in self.possible_jumps(self.A, s_near)]
+
+        # list of squares within one move
+        one_jumps = [[s_near, s_next] for s_next in self.possible_jumps(self.A, s_near.state)]
+
+        # for each first move
         for one_jump in one_jumps:
             jumps.append(one_jump)
+
+            # list of squares within two moves
             next_jumps = self.possible_jumps(self.A, one_jump[-1])
             for next_jump in next_jumps:
                 jumps.append(one_jump + [next_jump])
@@ -162,7 +172,7 @@ class ChessboardEnvironment:
         node1 = RRTVertex(best_jump[1], best_jump[0])
         if len(best_jump) > 2:
             node1.add_edge(best_jump[2])
-            node2 = RRTVertex(best_jump[2], best_jump[1])
+            node2 = RRTVertex(best_jump[2], node1)
 
         # add nodes to rrt
 
