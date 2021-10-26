@@ -1,14 +1,16 @@
 import numpy as np
 import random
+from scipy.spatial.distance import cdist
 
 class RRTVertex:
-    def __init__(self, state, parent):
+    def __init__(self, state, parent, initial=False):
         self.state = state
         self.parent = parent
         self.adjacent = []
+        self.initial = initial
     
-    def add_edge(self, adjacent_state):
-        self.adjacent.append(adjacent_state)
+    def add_edge(self, adjacent_vertex):
+        self.adjacent.append(adjacent_vertex)
 
 class ChessboardEnvironment:
     def __init__(self, board, initial_state):
@@ -30,11 +32,14 @@ class ChessboardEnvironment:
         self.visited = []
         self.queue = []
 
+        self.rrt_vertices = [RRTVertex(initial_state, None, initial=True)]
+
     def generate_graph(self, states, actions):
         graph = {}
         for state in states:
             graph[state] = self.possible_jumps(actions, state)
         return graph
+
     def backtrace(self,start_node,end_node, parents):
         path = []
         current_node = end_node
@@ -42,6 +47,7 @@ class ChessboardEnvironment:
             path.append(parents[current_node])
             current_node = parents[current_node]
         return path[::-1]
+
     def bfs(self, graph, node):
         queue = []
         visited = []
@@ -132,11 +138,34 @@ class ChessboardEnvironment:
                 if self.board[jump_y, jump_x] != '1' and (self.board[jump_y, jump_x] == '0' or np.array([jump_y, jump_x]) in self.target_coords):
                     possible_jumps.append((jump_y, jump_x))
         return possible_jumps
-    def sample_board(self,present_state):
-        
-        sample_state = (random.randint(0,self.rows),random.randint(0,self.cols))
 
-        return sample_state
+    def get_vertex(self, state):
+        for vertex in self.rrt_vertices:
+            if vertex.state == state:
+                return vertex
+        return False
+
+    def rrt(self, N, goal_state, goal_state_sample_prob):
+        for i in range(N):
+            if random.random() < goal_state_sample_prob:
+                s_rand = goal_state
+            else:
+                s_rand = (random.randint(0,self.rows),random.randint(0,self.cols))
+            distances = cdist([s_rand], [v.state for v in self.rrt_vertices])[0]
+            s_near = self.rrt_vertices[np.argmin(distances)]
+            s_new = RRTVertex(self.steer(s_rand, s_near), s_near)
+            s_new.add_edge(s_near)
+            self.rrt_vertices.append(s_new)
+
+        path = []
+        goal_vertex = self.get_vertex(goal_state)
+        curr = goal_vertex
+        while curr.initial == False:
+            path.append(curr.state)
+            curr = curr.parent
+        path.append(curr.state)
+        
+        return path
 
     def p_norm(self, s1, s2, p=2):
         return np.linalg.norm(np.array(s1)-np.array(s2), p)
@@ -169,10 +198,11 @@ class ChessboardEnvironment:
                 min_dist = curr_dist
                 best_jump = jump
 
-        node1 = RRTVertex(best_jump[1], best_jump[0])
-        if len(best_jump) > 2:
-            node1.add_edge(best_jump[2])
-            node2 = RRTVertex(best_jump[2], node1)
+        return best_jump[-1]
+        # node1 = RRTVertex(best_jump[1], best_jump[0])
+        # if len(best_jump) > 2:
+        #     node1.add_edge(best_jump[2])
+        #     node2 = RRTVertex(best_jump[2], node1)
 
         # add nodes to rrt
 

@@ -16,6 +16,5 @@ board = np.array([
 ])
 initial_state = (0, 0)
 chessboard = ChessboardEnvironment(board, initial_state)
-path = chessboard.bfs(graph=chessboard.graph, node=initial_state)
+path = chessboard.rrt(10, (7, 7), 0.3)
 print(path)
-chessboard.visualize(board,path)
