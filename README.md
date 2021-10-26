@@ -10,18 +10,27 @@ Clone the repository and install dependencies by executing the following command
 This project relies on numpy (for computation and mathematical representation) and pynput (for testing with keyboard interactions)
 
 ### How to run
-Two top-level scripts define the execution for a specific simulator: numberline.py and gridworld.py
+Two top-level scripts define the execution for a specific simulator. All variants for the execution is also located
+in this directory (i.e. Single agent gridworld - gridworld.py, multi agent gridworld - gridworld_multi_agent.py, etc.).
 Run the simluator by simply executing them in the Python3 environment with no arguments:
 
-    python3 gridworld.py
-    python3 numberline.py
+    python gridworld.py
+    python numberline.py
 
 #### Gridworld
 Three properties define the gridworld environment: the grid (i.e. walls, dimensions, etc.), the error probability (P_e), and the initial state (as the (y,x) coordinate). We require that the initial state resides in an empty cell, meaning the initial state cannot be a wall or road or target location.
 All three of these properties will be defined in the 'gridworld.py' file
 
 #### Numberline
-TODO
+The properties that can be changed are the following, passing as arguments to the NumberlineEnvironment class
+|  Parameter| Description  | Default Value  |   
+|---|---|---|
+|  gamma |  | 0.8  |   
+|  hill_size |  Hill size of the numberline |2   |   
+| resolution  | Resolution of the state space  |  0.9 |   
+| target_state  |  Target coordinate and velocity  |  (0,0)|   
+| y_max  | Maximum cooridinate on the number line (position)  | 10  |   
+| v_max  | Maximum Velocity  | 10  |   
 
 
 ## Architecture
