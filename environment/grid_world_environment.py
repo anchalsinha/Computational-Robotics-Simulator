@@ -97,14 +97,8 @@ class GridworldEnvironment(Environment):
                 invalid = desired_state not in possible_jumps_list # check if desired state is invalid
 
                 for s_ in S: # next state
-                    if invalid and s_ == s: # if invalid desired state and s_ is current state
-                        s_dict[s_] = 1
-                    elif not invalid and desired_state == s_: # if not invalid desired state and s_ is desired state
-                        s_dict[s_] = float(1-self.Pe)
-                    elif not invalid and s_ in possible_jumps_list: # if not invalid desired state and s_ is valid
-                        s_dict[s_] = self.Pe/(len(possible_jumps_list)-1)
-                    else:
-                        s_dict[s_] = 0
+                    s_dict[s_] = self.assign_prob(s, s_, invalid, desired_state, possible_jumps_list)
+
                 a_dict[a] = s_dict
             transition_prob_dict[tuple(s)] = a_dict
         return transition_prob_dict
@@ -148,13 +142,12 @@ class GridworldEnvironment(Environment):
 
         print('\n\n\n')
 
-    def get_prob(self, state, action, next_state):
+    def assign_prob(self, state, next_state, invalid, desired_state, possible_jumps_list):
         '''
-        Return the probability of transitioning to next state given state and action
+        Assign probability of transitioning from state to next state having determined the desired next state for 
+        a given state action tuple. The validity of the desired next state is given by input (invalid) and 
+        possible_jumps_list contains a list of all possible valid transitions that can occur from state 
         '''
-        possible_jumps_list = self.possible_jumps(self.A, state)
-        desired_state = tuple(np.add(state, action))
-        invalid = desired_state not in possible_jumps_list 
         if invalid and state == next_state: # if invalid desired state and s_ is current state
             return 1
         elif not invalid and desired_state == next_state: # if not invalid desired state and s_ is desired state
@@ -163,6 +156,16 @@ class GridworldEnvironment(Environment):
             return self.Pe/(len(possible_jumps_list)-1)
         else:
             return 0
+
+    def get_prob(self, state, action, next_state):
+        '''
+        Return the probability of transitioning to next state given state and action
+        '''
+        possible_jumps_list = self.possible_jumps(self.A, state)
+        desired_state = tuple(np.add(state, action))
+        invalid = desired_state not in possible_jumps_list
+
+        return self.assign_prob(state, next_state, invalid, desired_state, possible_jumps_list)
 
     def get_reward(self, state, action, next_state):
         '''
