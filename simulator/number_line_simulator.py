@@ -2,6 +2,8 @@ import numpy as np
 import time
 from abc import ABC, abstractmethod
 from pynput import keyboard
+
+import environment
 from .base_simulator import Simulator
 
 class NumberlineSimulator(Simulator):
@@ -49,12 +51,21 @@ class NumberlineSimulator(Simulator):
         while not self.exitProgram:
             time.sleep(0.1)
     
+    def run_randompaths(self):
+        listener = keyboard.Listener(on_press=self.keyboardCallback)
+        listener.start()
+
+        self.visualize()
+        while not self.exitProgram:
+            self.nextStep(environment.rrt())
+            self.visualize()
+            time.sleep(0.5)
     
     def run_policy(self, policy):
         # keyboard listener in background thread
         listener = keyboard.Listener(on_press=self.keyboardCallback)
         listener.start()
-
+        # print(policy)
         while not self.exitProgram:
             self.nextStep(policy[self.state])
             self.visualize()

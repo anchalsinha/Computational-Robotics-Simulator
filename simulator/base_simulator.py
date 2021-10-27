@@ -18,7 +18,7 @@ class Simulator(ABC):
         actions = self.environment.P[tuple(self.state)]
 
         transition = actions[action]
-        states = list(transition.keys())
+        states = list(self.environment.S.keys())
         next_state_idx = np.random.choice(np.arange(len(states)), p=list(transition.values()))
         next_state = states[next_state_idx]
         print(f'Next state: {next_state}, Probability of reaching this state: {transition[next_state]}')
