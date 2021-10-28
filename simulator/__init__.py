@@ -1,3 +1,1 @@
-from .grid_world_simulator import GridworldSimulator
-from .number_line_simulator import NumberlineSimulator
-from .yahtzee_simulator import YahtzeeSimulator
+from .simulator import Simulator

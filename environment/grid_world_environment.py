@@ -11,8 +11,8 @@ class GridworldEnvironment(Environment):
         self.grid = grid
         self.Pe = Pe
 
-        self.target_coords = np.array(np.where((grid != '0') & (grid != '1'))).T
-        print(self.target_coords)
+        self.target_coords = np.array(np.where((grid == 'D') | (grid == 'S'))).T
+        self.road_coords = np.array(np.where((grid == '2'))).T
         self.rows, self.cols = grid.shape
 
         # define state and action spaces
@@ -33,7 +33,13 @@ class GridworldEnvironment(Environment):
                 for next_state in S:
                     R.setdefault(state, {})
                     R[state].setdefault(action, {})
-                    R[state][action][next_state] = 1 if self.grid[next_state] == 'D' or self.grid[next_state] == 'H' else 0
+                    if list(next_state) in self.target_coords.tolist():
+                        R[state][action][next_state] = 1
+                    elif list(next_state) in self.road_coords.tolist():
+                        R[state][action][next_state] = -1
+                    else:
+                        R[state][action][next_state] = 0
+        return R
 
     def calculate_observation_set(self, S):
         O = {}
@@ -56,6 +62,9 @@ class GridworldEnvironment(Environment):
                 if self.grid[jump_y, jump_x] != '1' and (self.grid[jump_y, jump_x] == '0' or np.array([jump_y, jump_x]) in self.target_coords):
                     possible_jumps.append((jump_y, jump_x))
         return possible_jumps
+
+    def possible_actions(self, present_state):
+        return [(next_state[0] - present_state[0], next_state[1] - present_state[1]) for next_state in self.possible_jumps(self.A, present_state)]
 
     def calculate_transition_prob_set(self, S, A):
         '''
@@ -88,3 +97,58 @@ class GridworldEnvironment(Environment):
             transition_mat[tuple(s)]  = a_dic
         return transition_mat
     
+    def visualize(self, states, policy):
+        print("Policy: ")
+        for i in range(len(self.grid)):
+            row = '|'
+            for j in range(len(self.grid[0])):
+                if policy[i, j] == (0, 0):
+                    row += 'S|'
+                elif policy[i, j] == (1, 0):
+                    row += '↓|'
+                elif policy[i, j] == (-1, 0):
+                    row += '↑|'
+                elif policy[i, j] == (0, 1):
+                    row += '→|'
+                else:
+                    row += f'←|'
+            print(row)
+
+        print("Reward: ")
+        for i in range(len(self.grid)):
+            row = '|'
+            for j in range(len(self.grid[0])):
+                row += f'{self.get_r((0,0),(0,0),(i, j))}|'
+            print(row)
+
+        for i in range(len(self.grid)):
+            row = '|'
+            for j in range(len(self.grid[0])):
+                if (i, j) in states:
+                    row += 'O|'
+                elif self.grid[i, j] == '0':
+                    row += '_|'
+                elif self.grid[i, j] == '1':
+                    row += 'X|'
+                else:
+                    row += f'{self.grid[i, j]}|'
+            print(row)
+
+        print('\n\n\n')
+
+    def get_p(self, state, action, next_state):
+        # return self.P.get(state, {}).get(action, {}).get(next_state, 0)
+        list_possible_jumps = self.possible_jumps(self.A, state)
+        desired_state = tuple(np.add(state, action))
+        invalid = tuple(desired_state) not in list_possible_jumps 
+        if invalid and state == next_state: # if invalid desired state and s_ is current state
+            return 1
+        elif not invalid and desired_state == next_state: # if not invalid desired state and s_ is desired state
+            return float(1 - self.Pe)
+        elif not invalid and next_state in list_possible_jumps: # if not invalid desired state and s_ is valid
+            return self.Pe/(len(list_possible_jumps)-1)
+        else:
+            return 0
+
+    def get_r(self, state, action, next_state):
+        return self.R[state][action][next_state]
