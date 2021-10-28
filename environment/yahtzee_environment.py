@@ -13,9 +13,32 @@ class YahtzeeEnvironment(Environment):
         self.scores = self.score_rolls(S)
         P = self.calculate_transition_prob_set(S, A)
         R = self.calculate_reward_set(S, A)
-        O = None
+        O = self.calculate_O(S)
 
         Environment.__init__(self, S, A, P, O, R)
+    
+    def possible_actions(self, next_state):
+        return self.A 
+    
+    def possible_jumps(self, actions, curr_state):
+        possible = []
+        for a in actions:
+            for ns in self.S:
+                if self.P[curr_state][a][ns] != 0:
+                    possible.append(ns)
+        return possible
+    
+    def get_p(self, state, action, next_state):
+        return self.P[state][action][next_state]
+
+    def get_r(self, state, action, next_state):
+        return self.R[state][action][next_state]
+    
+    def calculate_O(self, S):
+        O = {}
+        for s in S:
+            O[s] = np.array([[1,1],[1,0]])
+        return O
 
     def score_rolls(self, S):
         roll_scores = {}
@@ -41,7 +64,7 @@ class YahtzeeEnvironment(Environment):
             for action in A:
                 R[state].setdefault(action, {})
                 for next_state in S:
-                    R[state][action][next_state] = self.scores(next_state) - self.scores(state)
+                    R[state][action][next_state] = self.scores[next_state] - self.scores[state]
         return R
 
     def calculate_transition_prob_set(self, S, A):
@@ -58,11 +81,25 @@ class YahtzeeEnvironment(Environment):
                     next_state = np.asarray(ns)
                     keep = state[np.where(action==0)]
                     needed = np.copy(next_state)
+
                     for i in [v for v in keep if v in needed]:
-                            needed = np.delete(needed, (needed==i).argmax)
+                        del_i = (needed==i).argmax()
+                        if needed[del_i] == i:
+                            needed = np.delete(needed, del_i)
+                    
+                    '''
+                    print(state)
+                    print(action)
+                    print(next_state)
+                    print(keep)
+                    print(needed)
+                    print()
+                    '''
                         
                     if len(needed) == num_rolls:
                         T[s][a][ns] = math.factorial(len(set(needed))) * ((1/6)**num_rolls)
+                    else:
+                        T[s][a][ns] = 0
 
         return T 
     
