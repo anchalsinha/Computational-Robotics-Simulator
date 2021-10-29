@@ -109,11 +109,3 @@ class YahtzeeEnvironment(Environment):
 
         print('Policy:')
         print(policy[states[0]])
-
-
-
-
-
-
-
-
