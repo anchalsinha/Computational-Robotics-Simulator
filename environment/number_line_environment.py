@@ -3,11 +3,12 @@ import random
 from scipy.misc import derivative
 from scipy.integrate import quad 
 import pdb
+from utils.utils import Graph
 
 from .base_environment import Environment
 
 class NumberLineEnvironment(Environment):
-    def __init__(self,gamma = 0.8,hill_size=2,resolution=0.9,target_state= (0,0),v_max=10.0,y_max=10.0):
+    def __init__(self,planning_type='rrt',gamma = 0.8,hill_size=2,resolution=0.9,target_state= (0,0),v_max=10.0,y_max=10.0):
         self.v_max = v_max
         self.y_max = y_max
         self.p_c = 5
@@ -15,6 +16,7 @@ class NumberLineEnvironment(Environment):
         self.hill_size = hill_size    #TODO make input
         self.input_UB = 1
         self.input_LB = -1
+        self.planning_type = planning_type
 
         #MDP
         self.gamma = gamma
@@ -23,31 +25,27 @@ class NumberLineEnvironment(Environment):
         #prm
         self.prm_time_upper_bound = 2
         
-
-
         self.position = 0  # position
         self.velocity = 0  # velocity
         self.time = 0
 
         self.target_state = target_state
 
+        if self.planning_type != 'rrt':
+            self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
+            self.action_space_discretization()
+            self.update_state()
 
-        self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
-        self.action_space_discretization()
-        self.update_state()
+            # define state and action spaces.We formulate based on aggregate sets
+            S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
+            A = self.action_space                                # set of all actions
 
-        # define state and action spaces.We formulate based on aggregate sets
-        S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
-        A = self.action_space                                # set of all actions
-        print(A)
+            O = self.calculate_observation_set(S)            # set of all observations
+            P = self.calculate_discrete_transition_probability_set(S, A)    # set of all transtions probabilities
+            R = self.calculate_reward_set(S,A)
 
-        O = self.calculate_observation_set(S)            # set of all observations
-        P = self.calculate_discrete_transition_probability_set(S, A)    # set of all transtions probabilities
-        
-        R = self.calculate_reward_set(S,A)
-
-        Environment.__init__(self, S, A, P, O,R)
-        print(len(self.P.keys()))
+            Environment.__init__(self, S, A, P, O,R)
+            print(len(self.P.keys()))
 
     def state_space_discretization(self,resolution= 0.1):
         self.position_space = np.arange(-self.y_max,self.y_max+resolution,resolution)
@@ -231,7 +229,15 @@ class NumberLineEnvironment(Environment):
         theta = np.arctan2(end[1] - start[1], end[0] - start[0])
         return start[0] + random.uniform(0, 10) * np.cos(theta), start[1] + random.uniform(0, 10) * np.cos(theta)
 
-    def rrt(self, start, end):
+    def rrt1(self,start, end):
+        G = Graph(start, end)
+
+        # find random vertex
+        # check for obstacles
+        # 
+        while i in range
+
+    def rrt(self, start = (-10,-10), end= (0, 0)):
         start = tuple(start)
         end = tuple(end)
 
@@ -278,7 +284,6 @@ class NumberLineEnvironment(Environment):
         return transition_mat
 
     def calculate_discrete_transition_probability_set(self, S, A):
-        print("discrete probability")
         """Returns the transition probability matrix"""
         samples = 10
         discrete_transition_dict = {}
@@ -288,7 +293,6 @@ class NumberLineEnvironment(Environment):
         #     for action in A:
         #         for new_state in S:
         #             discrete_transition_dict[(state,action,new_state)] = 0.0
-        
         
         for state in S:
             a_dict = {}
@@ -310,7 +314,7 @@ class NumberLineEnvironment(Environment):
                     # discrete_transition_dict[(state,action,a_next_state)] = normalized_prob
                 a_dict[action] = s_dict
             discrete_transition_dict[state]=a_dict
-            print(discrete_transition_dict)
+            # print(discrete_transition_dict)
         return discrete_transition_dict
 
     def _probability_of_state(self):
