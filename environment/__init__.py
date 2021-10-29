@@ -1,2 +1,3 @@
 from .grid_world_environment import GridworldEnvironment
 from .number_line_environment import NumberLineEnvironment
+from .yahtzee_environment import YahtzeeEnvironment
