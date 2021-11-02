@@ -1,7 +1,9 @@
+from os import stat
 import numpy as np
 import time
 from abc import ABC, abstractmethod
 from pynput import keyboard
+import matplotlib.pyplot as plt
 
 import environment
 from .base_simulator import Simulator
@@ -52,14 +54,19 @@ class NumberlineSimulator(Simulator):
             time.sleep(0.1)
     
     def run_randompaths(self):
-        listener = keyboard.Listener(on_press=self.keyboardCallback)
-        listener.start()
+        rrt_traj = self.environment.rrt()
+        self.viz_rrt(rrt_traj)
+    
+    def viz_rrt(self,rrt_traj):
+        y_max = self.environment.y_max
+        v_max = self.environment.v_max
+        plt.xlim(-y_max,y_max)
+        plt.ylim(-v_max,v_max)
+        plt.plot(rrt_traj)
+        plt.show()
 
-        self.visualize()
-        while not self.exitProgram:
-            self.nextStep(environment.rrt())
-            self.visualize()
-            time.sleep(0.5)
+       
+            
     
     def run_policy(self, policy):
         # keyboard listener in background thread

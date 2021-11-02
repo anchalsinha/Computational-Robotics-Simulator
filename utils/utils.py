@@ -1,0 +1,43 @@
+import numpy as np
+from random import random
+
+class Graph:
+    ''' Define graph '''
+    def __init__(self, startpos, endpos):
+        self.startpos = startpos
+        self.endpos = endpos
+
+        self.vertices = [startpos]
+        self.edges = []
+        self.success = False
+
+        self.vex2idx = {startpos:0}
+        self.neighbors = {0:[]}
+        self.distances = {0:0.}
+
+        self.sx = endpos[0] - startpos[0]
+        self.sy = endpos[1] - startpos[1]
+
+    def add_vex(self, pos):
+        try:
+            idx = self.vex2idx[pos]
+        except:
+            idx = len(self.vertices)
+            self.vertices.append(pos)
+            self.vex2idx[pos] = idx
+            self.neighbors[idx] = []
+        return idx
+
+    def add_edge(self, idx1, idx2, cost):
+        self.edges.append((idx1, idx2))
+        self.neighbors[idx1].append((idx2, cost))
+        self.neighbors[idx2].append((idx1, cost))
+
+
+    def randomPosition(self):
+        rx = random()
+        ry = random()
+
+        posx = self.startpos[0] - (self.sx / 2.) + rx * self.sx * 2
+        posy = self.startpos[1] - (self.sy / 2.) + ry * self.sy * 2
+        return posx, posy
