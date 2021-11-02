@@ -1,9 +1,10 @@
 import numpy as np
+import itertools
 
 from .base_environment import Environment
 
 class GridworldEnvironment(Environment):
-    def __init__(self, grid, Pe):
+    def __init__(self, grid, Pe, n_agents):
         '''
         Define discrete state space system configuration from the defined grid. In the grid array,
         walls are defined as '1', empty spaces as '0', and targets as a characters ('D' and 'S')
@@ -16,38 +17,30 @@ class GridworldEnvironment(Environment):
         self.rows, self.cols = grid.shape
 
         # define state and action spaces
-        S = [(y, x) for y in range(0, self.rows) for x in range(0, self.cols)]
-        A = [(0, -1), (0, 1), (-1, 0), (1, 0), (0, 0)]
+        coords = list(map(tuple, np.mgrid[0:5,0:5].T.reshape(-1, 2)))
+        S = list(itertools.product(coords, repeat=n_agents))
+        actions = [(0, -1), (0, 1), (-1, 0), (1, 0), (0, 0)]
+        A = list(itertools.product(actions, repeat=n_agents))
 
-        O = self.calculate_observation_set(S)
-        P = self.calculate_transition_prob_set(S, A)
+        # O = self.calculate_observation_set(S)
+        # P = self.calculate_transition_prob_set(S, A)
 
-        R = self.calculate_reward_set(S, A)
+        # R = self.calculate_reward_set(S, A)
 
-        Environment.__init__(self, S, A, P, O, R)
+        Environment.__init__(self, S, A, None, None, None)
 
-    def calculate_reward_set(self, S, A):
-        R = {}
-        for state in S:
-            for action in A:
-                for next_state in S:
-                    R.setdefault(state, {})
-                    R[state].setdefault(action, {})
-                    if list(next_state) in self.target_coords.tolist():
-                        R[state][action][next_state] = 1
-                    elif list(next_state) in self.road_coords.tolist():
-                        R[state][action][next_state] = -1
-                    else:
-                        R[state][action][next_state] = 0
-        return R
+    def subtract_coords(self, state, target):
+        return np.array([target - s for s in state]).reshape(-1, 2)
 
-    def calculate_observation_set(self, S):
-        O = {}
-        for state in S:
-            h = np.mean(np.linalg.norm(np.subtract(self.target_coords, state), axis=1))
-            o = np.array([[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.ceil(h) - h]])
-            O[state] = o
-        return O
+    def calculate_phi(self, state):
+        basis_functions = [
+            np.sum(np.linalg.norm(state, axis=1)), # sum of distances 
+            np.sum([np.mean(np.linalg.norm(self.subtract_coords(s, self.target_coords), axis=1)) for s in state]), # sum of harmonic mean distance to targets
+            np.sum([np.mean(np.linalg.norm(self.subtract_coords(s, self.road_coords), axis=1)) for s in state]), # sum of harmonic mean distance to the road
+        ]
+        basis_functions += [len(self.possible_jumps(self.A, s)) for s in state] # number of possible jumps for each agent
+
+        return basis_functions
 
     def possible_jumps(self, A, present_state):
         '''
@@ -56,47 +49,54 @@ class GridworldEnvironment(Environment):
         '''
         possible_jumps= []
         for a in A:
-            jump_y = present_state[0] + a[0]
-            jump_x = present_state[1] + a[1]
-            if jump_y >= 0 and jump_y < self.rows and jump_x >= 0 and jump_x < self.cols:
-                if self.grid[jump_y, jump_x] != '1' and (self.grid[jump_y, jump_x] == '0' or np.array([jump_y, jump_x]) in self.target_coords):
-                    possible_jumps.append((jump_y, jump_x))
+            jump_state = np.add(present_state, a)
+            valid = True
+            for s in jump_state:
+                if s[0] >= 0 and s[0] < self.rows and s[1] >= 0 and s[1] < self.cols:
+                    valid &= self.grid[tuple(s)] != '1' and (self.grid[tuple(s)] == '0' or s in self.target_coords)
+            if valid:
+                possible_jumps.append(jump_state)
+
         return possible_jumps
 
-    def possible_actions(self, present_state):
-        return [(next_state[0] - present_state[0], next_state[1] - present_state[1]) for next_state in self.possible_jumps(self.A, present_state)]
-
-    def calculate_transition_prob_set(self, S, A):
+    def calculate_transition_prob(self, state, action):
         '''
-        Calculates the transition probability set. The data type is a triple-nested dictionary to 
-        represent the input triplet (state, action, next state) determining the transition probability
+        Calculates the transition probabilities for the surrounding next states provided the current state and action. 
+        Instead of calculating the complete set P acting as a "lookup table", we will compute the transition probabilities 
+        for every transition when needed to make it robust to situations when the state space is very large.
         '''
-        transition_mat = {}
-        for s in S: # current state
-            if self.grid[s] == '1':
-                continue
+        list_possible_jumps = self.possible_jumps(self.A, state)
+        next_states = np.add(self.A, state)
+        desired_state = np.add(action, state)
+        invalid = np.equal(desired_state, list_possible_jumps).all(axis=1).any() # check if desired state is invalid
 
-            list_possible_jumps = self.possible_jumps(A, s)
-            a_dic ={}
+        P = {}
 
-            for a in A: # current action
-                s_dict = {}
-                desired_state = tuple(np.add(s, a))
-                invalid = tuple(desired_state) not in list_possible_jumps # check if desired state is invalid
+        for s in next_states: # next state
+            key = tuple(map(tuple, s))
+            if invalid and np.array_equal(s, np.array(state)): # if invalid desired state and s_ is current state
+                P[key] = 1
+            elif not invalid and np.array_equal(s, desired_state): # if not invalid desired state and s is desired state
+               P[key] = float(1-self.Pe)
+            elif not invalid and s in list_possible_jumps: # if not invalid desired state and s is valid
+                P[key] = self.Pe/(len(list_possible_jumps)-1)
+            else:
+                P[key] = 0
 
-                for s_ in S: # next state
-                    if invalid and s_ == s: # if invalid desired state and s_ is current state
-                        s_dict[s_] = 1
-                    elif not invalid and desired_state == s_: # if not invalid desired state and s_ is desired state
-                        s_dict[s_] = float(1-self.Pe)
-                    elif not invalid and s_ in list_possible_jumps: # if not invalid desired state and s_ is valid
-                        s_dict[s_] = self.Pe/(len(list_possible_jumps)-1)
-                    else:
-                        s_dict[s_] = 0
-                a_dic[a]= s_dict
-            transition_mat[tuple(s)]  = a_dic
-        return transition_mat
+        return P
     
+    def calculate_reward(self, state):
+        if list(state) in self.target_coords.tolist():
+            return 1
+        elif list(state) in self.road_coords.tolist():
+            return -1
+        else:
+            return 0
+
+    def calculate_observation(self, state):
+        h = np.mean(np.linalg.norm(self.subtract_coords(state, self.target_coords), axis=1))
+        return np.array([[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.ceil(h) - h]])
+
     def visualize(self, states, policy):
         print("Policy: ")
         for i in range(len(self.grid)):
@@ -135,20 +135,3 @@ class GridworldEnvironment(Environment):
             print(row)
 
         print('\n\n\n')
-
-    def get_p(self, state, action, next_state):
-        # return self.P.get(state, {}).get(action, {}).get(next_state, 0)
-        list_possible_jumps = self.possible_jumps(self.A, state)
-        desired_state = tuple(np.add(state, action))
-        invalid = tuple(desired_state) not in list_possible_jumps 
-        if invalid and state == next_state: # if invalid desired state and s_ is current state
-            return 1
-        elif not invalid and desired_state == next_state: # if not invalid desired state and s_ is desired state
-            return float(1 - self.Pe)
-        elif not invalid and next_state in list_possible_jumps: # if not invalid desired state and s_ is valid
-            return self.Pe/(len(list_possible_jumps)-1)
-        else:
-            return 0
-
-    def get_r(self, state, action, next_state):
-        return self.R[state][action][next_state]
