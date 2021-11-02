@@ -35,11 +35,13 @@ class NumberLineEnvironment(Environment):
         self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
         self.action_space_discretization()
         self.update_state()
+        self.state_space_eval()
 
         # define state and action spaces.We formulate based on aggregate sets
-        S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
+       
+        S =  self.state_space #[(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
         A = self.action_space                                # set of all actions
-        print(A)
+        #print(S)
 
         O = self.calculate_observation_set(S)            # set of all observations
         P = self.calculate_discrete_transition_probability_set(S, A)    # set of all transtions probabilities
@@ -52,6 +54,7 @@ class NumberLineEnvironment(Environment):
     def state_space_discretization(self,resolution= 0.1):
         self.position_space = np.arange(-self.y_max,self.y_max+resolution,resolution)
         self.velocity_space = np.arange(-self.v_max,self.v_max+resolution,resolution)
+       
 
     def get_p(self,current_state, action, next_state):
         ##TODO add the prob determination via knn here
@@ -64,6 +67,16 @@ class NumberLineEnvironment(Environment):
 
     def action_space_discretization(self,resolution=0.1):
         self.action_space = np.arange(self.input_LB,self.input_UB,resolution)
+
+    def state_space_eval(self):
+        temp = []
+        for x in self.position_space:
+            for y in self.velocity_space:
+                x_t = np.float(round(x))
+                y_t = np.float(round(y))
+                temp.append((x_t,y_t))
+                #print(t)
+        self.state_space = temp
 
     def phi(self,y) -> int :
         """potential field"""
@@ -283,7 +296,7 @@ class NumberLineEnvironment(Environment):
         samples = 10
         discrete_transition_dict = {}
         # Initialize the probability set with zero
-        print(len(S),len(A))
+        #print(len(S),len(A))
         # for state in S:
         #     for action in A:
         #         for new_state in S:
@@ -310,7 +323,7 @@ class NumberLineEnvironment(Environment):
                     # discrete_transition_dict[(state,action,a_next_state)] = normalized_prob
                 a_dict[action] = s_dict
             discrete_transition_dict[state]=a_dict
-            print(discrete_transition_dict)
+            print(discrete_transition_dict.keys())
         return discrete_transition_dict
 
     def _probability_of_state(self):
