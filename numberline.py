@@ -21,5 +21,9 @@ if running_what == 'mdp':
     numberline_policy = numberline_mdp.value_iteration(0.01)
     numberline_simulator.run_policy(numberline_policy)
 
+<<<<<<< HEAD
+numberline_simulator.run_policy(numberline_policy)
+=======
 elif running_what == 'rrt':
     numberline_simulator.run_randompaths()
+>>>>>>> c44c7452213416930513685056b9b3f59aa07a32

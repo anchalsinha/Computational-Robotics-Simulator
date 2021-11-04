@@ -12,6 +12,8 @@ class MDP(ABC):
         state_value_ = 0
         for next_state in self.environment.possible_jumps(self.environment.A, current_state):
             movement_prob = self.environment.get_p(current_state, action, next_state)
+            #print('this is move')
+            #print(movement_prob)
             movement_reward = self.environment.get_r(current_state, action, next_state)
             state_value_ += movement_prob * (movement_reward + gamma * value_function.get(next_state, 0))
         return state_value_
