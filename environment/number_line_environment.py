@@ -39,7 +39,6 @@ class NumberLineEnvironment(Environment):
             self.update_state()
             
 
-<<<<<<< HEAD
         self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
         self.action_space_discretization()
         self.update_state()
@@ -55,25 +54,16 @@ class NumberLineEnvironment(Environment):
         P = self.calculate_discrete_transition_probability_set(S, A)    # set of all transtions probabilities
         
         R = self.calculate_reward_set(S,A)
-=======
-            # define state and action spaces.We formulate based on aggregate sets
-            S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
-            A = self.action_space                                # set of all actions
 
-            O = self.calculate_observation_set(S)            # set of all observations
-            P = self.calculate_discrete_transition_probability_set(S, A)    # set of all transtions probabilities
-            R = self.calculate_reward_set(S,A)
->>>>>>> c44c7452213416930513685056b9b3f59aa07a32
+        Environment.__init__(self, S, A, P, O,R)
 
-            Environment.__init__(self, S, A, P, O,R)
+        # STATE ESTIMATION 
+        # The size of the belief state is the size of the state space
+        self.belief_state = list(np.zeros(len(self.S)))
+        # initialize the belief state with probability of the initial state we assigned to it
+        self.belief_state[self.S.index(self.state)] = 1
 
-            # STATE ESTIMATION 
-            # The size of the belief state is the size of the state space
-            self.belief_state = list(np.zeros(len(self.S)))
-            # initialize the belief state with probability of the initial state we assigned to it
-            self.belief_state[self.S.index(self.state)] = 1
-
-            print("Size of transition probability set",len(self.P.keys()))
+        print("Size of transition probability set",len(self.P.keys()))
 
     def state_space_discretization(self,resolution= 0.1):
         self.position_space = np.arange(-self.y_max,self.y_max+resolution,resolution)
@@ -353,11 +343,7 @@ class NumberLineEnvironment(Environment):
                     # discrete_transition_dict[(state,action,a_next_state)] = normalized_prob
                 a_dict[action] = s_dict
             discrete_transition_dict[state]=a_dict
-<<<<<<< HEAD
-            print(discrete_transition_dict.keys())
-=======
             # print(discrete_transition_dict)
->>>>>>> c44c7452213416930513685056b9b3f59aa07a32
         return discrete_transition_dict
 
     def possible_actions(self, present_state):
