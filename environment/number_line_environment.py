@@ -17,6 +17,7 @@ class NumberLineEnvironment(Environment):
         self.input_UB = 1
         self.input_LB = -1
         self.planning_type = planning_type
+        
 
         #MDP
         self.gamma = gamma
@@ -25,16 +26,18 @@ class NumberLineEnvironment(Environment):
         #prm
         self.prm_time_upper_bound = 2
         
-        self.position = 0  # position
-        self.velocity = 0  # velocity
+        self.position = self.y_max  # position
+        self.velocity = 0.0  # velocity
         self.time = 0
 
         self.target_state = target_state
+        
 
         if self.planning_type != 'rrt':
             self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
             self.action_space_discretization()
             self.update_state()
+            
 
             # define state and action spaces.We formulate based on aggregate sets
             S = [(y, x) for y in self.position_space for x in  self.velocity_space]  # set of all states
@@ -45,7 +48,14 @@ class NumberLineEnvironment(Environment):
             R = self.calculate_reward_set(S,A)
 
             Environment.__init__(self, S, A, P, O,R)
-            print(len(self.P.keys()))
+
+            # STATE ESTIMATION 
+            # The size of the belief state is the size of the state space
+            self.belief_state = list(np.zeros(len(self.S)))
+            # initialize the belief state with probability of the initial state we assigned to it
+            self.belief_state[self.S.index(self.state)] = 1
+
+            print("Size of transition probability set",len(self.P.keys()))
 
     def state_space_discretization(self,resolution= 0.1):
         self.position_space = np.arange(-self.y_max,self.y_max+resolution,resolution)
@@ -235,7 +245,7 @@ class NumberLineEnvironment(Environment):
         # find random vertex
         # check for obstacles
         # 
-        while i in range
+        pass
 
     def rrt(self, start = (-10,-10), end= (0, 0)):
         start = tuple(start)
@@ -317,16 +327,9 @@ class NumberLineEnvironment(Environment):
             # print(discrete_transition_dict)
         return discrete_transition_dict
 
-    def _probability_of_state(self):
-        pass
-
-    def _knn(self):
-        pass
-
     def possible_actions(self, present_state):
         ##TODO fit to numberline problem
         return self.A
-
 
     def _net_force(self, input_force) -> int:
         """The net force \\
@@ -355,7 +358,6 @@ class NumberLineEnvironment(Environment):
     def possible_actions(self, state):
         return self.A
 
-    
     def LQR(self):
         pass
 
@@ -380,3 +382,36 @@ class NumberLineEnvironment(Environment):
         for action in range(-1,1):
             next_position = self._next_position(current_state)
             next_velocity = self._next_velocity(current_state,action)
+
+    
+    ## STATE ESTIMATION ----------------------------------------------------------------------
+    ## ---------------------------------------------------------------------------------------
+
+    def state_estimation(self):
+        pass
+    
+    def update_belief(self,belief):
+        # bel(t)-
+        # bel(t+1)-
+        # bel(t)+
+        pass
+    
+    def on_action_belief_update(self,action,previous_state):
+        pass
+
+    def particle_filter(self):
+        # sample a number of points
+
+        # pr(s`|s,a)
+        
+        pass
+
+    def update_weights(self,state,p_num,weights):
+        y_curr,v_curr = state
+        for w in range(p_num):
+            weights[w] =  self._noise_sensor(v_curr)* self._noise_dynamics()
+        
+
+    def sensor_model(self,state):
+
+        pass
