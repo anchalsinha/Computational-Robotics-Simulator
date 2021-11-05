@@ -11,7 +11,7 @@ class NumberLineEnvironment(Environment):
     def __init__(self,planning_type='rrt',gamma = 0.8,hill_size=2,resolution=0.9,target_state= (0,0),v_max=10.0,y_max=10.0):
         self.v_max = v_max
         self.y_max = y_max
-        self.p_c = 5
+        self.p_c = random.uniform(0, 1)
         self.m = 0.5
         self.hill_size = hill_size    #TODO make input
         self.input_UB = 1
@@ -173,8 +173,9 @@ class NumberLineEnvironment(Environment):
         next_state = (next_position, next_velocity)
         return next_state
 
-
- # np.linalg.norm(np.subtract(vertex, current))
+    def prob_of_crashing(self,state):
+        probability_of_crashing = ((np.abs(state[1]-self.v_max)) * self.p_c)/self.v_max
+        return probability_of_crashing
        
     def heuristic(self, a, b):
         (x1, y1) = a
@@ -405,6 +406,8 @@ class NumberLineEnvironment(Environment):
     
     ## STATE ESTIMATION ----------------------------------------------------------------------
     ## ---------------------------------------------------------------------------------------
+    def transition_probability_continuous(self,next_state,curr_state,action):
+        self.prob_of_crashing(curr_state)* self._noise_dynamics(curr_state)
 
     def state_estimation(self):
         pass
@@ -420,17 +423,20 @@ class NumberLineEnvironment(Environment):
 
     def particle_filter(self):
         # sample a number of points
-
+        np.random
         # pr(s`|s,a)
         
         pass
 
-    def update_weights(self,state,p_num,weights):
-        y_curr,v_curr = state
-        for w in range(p_num):
-            weights[w] =  self._noise_sensor(v_curr)* self._noise_dynamics()
+    def update_weights(self,particles):
+        # particle : [state,weight]
+        for particle in particles:
+            state = particle[0]
+            weight_old = particle[1]
+            weight_new =  self.sensor_model(state)*weight_old
+
         
 
     def sensor_model(self,state):
-
-        pass
+        sensor_model =  self._noise_sensor(state)
+        return sensor_model
