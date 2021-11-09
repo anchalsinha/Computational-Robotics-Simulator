@@ -1,7 +1,7 @@
 from collections import defaultdict
 import numpy as np
 
-from base_environment import Environment
+from .base_environment import Environment
 
 class GridworldEnvironment(Environment):
     def __init__(self, grid, Pe):
@@ -153,6 +153,10 @@ class GridworldEnvironment(Environment):
 
     def get_r(self, state, action, next_state):
         return self.R[state][action][next_state]
+    
+    def get_o(self, state):
+        obs = self.O[state]
+        return np.random.choice(obs[:,0], p=obs[:,1])
 
     # returns P(z|s)
     def observation_prob(self, observation, state):
