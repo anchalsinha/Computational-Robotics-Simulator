@@ -423,7 +423,7 @@ class NumberLineEnvironment(Environment):
 
     def particle_filter(self):
         # sample a number of points
-        np.random
+        np.randomd
         # pr(s`|s,a)
         
         pass
