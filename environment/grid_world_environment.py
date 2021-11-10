@@ -159,15 +159,20 @@ class GridworldEnvironment(Environment):
         return np.random.choice(obs[:,0], p=obs[:,1])
 
     # returns P(z|s)
-    def observation_prob(self, observation, state):
-        state_obs = self.O[state]
+    def observation_prob(self, observation, state, rewards=None):
+        if rewards is None:
+            rewards = self.target_coords
+
+        h = np.mean(np.linalg.norm(np.subtract(rewards, state), axis=1))
+        o = np.array([[np.ceil(h), 1 - (np.ceil(h) - h)], [np.floor(h), np.ceil(h) - h]])
+        state_obs = o
 
         for obs in state_obs:
             if obs[0] == observation:
                 return obs[1]
         return 0
 
-    def bayes_filter(self, belief, data, data_type):
+    def bayes_filter(self, belief, data, data_type, rewards=None):
         n = 0
 
         new_belief = defaultdict(int)
@@ -176,7 +181,7 @@ class GridworldEnvironment(Environment):
             # observation update
             for state in self.S:
                 # Bel'(x) = P(z|x) * Bel(x)
-                new_belief[state] = self.observation_prob(data, state) * belief[state]
+                new_belief[state] = self.observation_prob(data, state, rewards) * belief[state]
                 n += new_belief[state]
 
             # normalize
