@@ -11,7 +11,7 @@ class NumberLineEnvironment(Environment):
     def __init__(self,planning_type='rrt',gamma = 0.8,hill_size=2,resolution=0.9,target_state= (0,0),v_max=10.0,y_max=10.0):
         self.v_max = v_max
         self.y_max = y_max
-        self.p_c = random.uniform(0, 1)
+        self.p_c = 5
         self.m = 0.5
         self.hill_size = hill_size    #TODO make input
         self.input_UB = 1
@@ -173,9 +173,8 @@ class NumberLineEnvironment(Environment):
         next_state = (next_position, next_velocity)
         return next_state
 
-    def prob_of_crashing(self,state):
-        probability_of_crashing = ((np.abs(state[1]-self.v_max)) * self.p_c)/self.v_max
-        return probability_of_crashing
+
+ # np.linalg.norm(np.subtract(vertex, current))
        
     def heuristic(self, a, b):
         (x1, y1) = a
@@ -406,16 +405,19 @@ class NumberLineEnvironment(Environment):
     
     ## STATE ESTIMATION ----------------------------------------------------------------------
     ## ---------------------------------------------------------------------------------------
-    def transition_probability_continuous(self,next_state,curr_state,action):
-        self.prob_of_crashing(curr_state)* self._noise_dynamics(curr_state)
-
+    N=500
+    weights = np.array([1.0]*N)
+    def create_uniform_particles(y_range, v_range, N):
+        particles = np.empty((N, 2))
+        particles[:, 0] = np.random(y_range[0], y_range[1], size=N)
+        particles[:, 1] = np.random(v_range[0], v_range[1], size=N)
+        return particles
+   
     def state_estimation(self):
         pass
     
-    def update_belief(self,belief):
-        # bel(t)-
-        # bel(t+1)-
-        # bel(t)+
+    def update_state(self,belief):
+       
         pass
     
     def on_action_belief_update(self,action,previous_state):
@@ -423,20 +425,19 @@ class NumberLineEnvironment(Environment):
 
     def particle_filter(self):
         # sample a number of points
-        np.randomd
+
         # pr(s`|s,a)
         
         pass
 
-    def update_weights(self,particles):
-        # particle : [state,weight]
-        for particle in particles:
-            state = particle[0]
-            weight_old = particle[1]
-            weight_new =  self.sensor_model(state)*weight_old
-
+    def update_weights(self,state,p_num,weights):
+        y_curr,v_curr = state
+        for w in range(p_num):
+            weights[w] =  self._noise_sensor(v_curr)* weights
         
+    def neff(weights):
+        return 1. / np.sum(np.square(weights))
 
     def sensor_model(self,state):
-        sensor_model =  self._noise_sensor(state)
-        return sensor_model
+        np.random.normal(state[0], np.abs(0.5*state[1]))
+        pass
