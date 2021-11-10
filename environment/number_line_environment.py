@@ -452,7 +452,25 @@ class NumberLineEnvironment(Environment):
         # t
         # 10: add x[i]
         # t to Xt
+    def systematic_resample(weights):
+        N = len(weights)
+        positions = (np.arange(N) + np.random.random()) / N
+
+        indexes = np.zeros(N, 'i')
+        cumulative_sum = np.cumsum(weights)
+        i, j = 0, 0
+        while i < N and j<N:
+            if positions[i] < cumulative_sum[j]:
+                indexes[i] = j
+                i += 1
+            else:
+                j += 1
+        return indexes
         
+    def resample_from_index(particles, weights, indexes):
+        particles[:] = particles[indexes]
+        weights[:] = weights[indexes]
+        weights /= np.sum(weights)
 
     def update_weights(self,weight_old,state,weight_sum):
         # particle : [[states],[weights]] both lists have the same size 
