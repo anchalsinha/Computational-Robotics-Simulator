@@ -415,47 +415,55 @@ class NumberLineEnvironment(Environment):
     def state_estimation(self):
         pass
     
-    def update_state(self,state):
+    def system_dynamics(self,state,action):
         # particle filter does't have belief
         # run state dynamics 
-        return self._next_state(state)
+        return self._next_state(state,action)
 
-    N=500
-    weights = np.array([1.0]*N)
-    def create_uniform_particles(y_range, v_range, N):
-        particles = np.empty((N, 2))
-        particles[:, 0] = np.random(y_range[0], y_range[1], size=N)
-        particles[:, 1] = np.random(v_range[0], v_range[1], size=N)
-        return particles
    
-    def state_estimation(self):
-        pass
+    def create_uniform_particles(self, N):
+        particles = np.empty((N, 2))
+        particles[:, 0] = np.random(-self.y_max, self.y_max, size=N)
+        particles[:, 1] = np.random(-self.v_max, self.v_max, size=N)
+        return particles
+    
+    def particle_and_weights(self,N):
+        initial_state = (self.y_max,self.v_max)
+        weights = np.array([1.0]*N)
+        particles = self.create_uniform_particles(N)
+        particle_weight_list = [particles,weights]
+        return particle_weight_list
+   
+    def state_estimation(self,N):
+        particles = self.particle_and_weights(N)
+        self.particle_filter(particles)
     
 
-    def particle_filter(self,num_of_particles):
-        # sample a number of points
-        initial_state = (self.y_max,self.v_max)
-        for n in range(num_of_particles):
-        
-            particles = [[],[]]
-
-        # pr(s`|s,a)
-        
-        pass
-
-    def update_weights(self,particles):
-        # particle : [[states],[weights]] both lists have the same size 
+    def particle_filter(self,particles,action,observation):
+        # sample a number of points and init
         weight_sum = particles[1].sum()
-        for ctr,state in enumerate(particles[0]):
-            weight_old = particles[1][ctr]  
-            particles[1][ctr] =  (self.sensor_model(state)*weight_old)/weight_sum  #update the weight and normalize
+        for ctr,particle in enumerate(particles[0]):
+            next_state = self.system_dynamics(particle[0][ctr],action)
+            particles[1][ctr] = self.update_weights(particles[1][ctr],next_state,weight_sum)
+            particles[0][ctr] = next_state   
+        # TODO add     
+        ## for m = 1 to M do
+        # 9: draw i with probability ∝ w[i]
+        # t
+        # 10: add x[i]
+        # t to Xt
+        
+
+    def update_weights(self,weight_old,state,weight_sum):
+        # particle : [[states],[weights]] both lists have the same size 
+        
+        weight_new =  (self.sensor_model(state)*weight_old)/weight_sum  #update the weight and normalize
+        return weight_new
+
             
-
-
         
     def neff(weights):
         return 1. / np.sum(np.square(weights))
 
     def sensor_model(self,state):
-        np.random.normal(state[0], np.abs(0.5*state[1]))
-        pass
+        return self._noise_sensor(state)
