@@ -358,8 +358,9 @@ class NumberLineEnvironment(Environment):
         f_net = int(input_force + derivative(self.phi, self.state[0]) )
         return f_net
 
-    def _noise_sensor(self,v):
-        return np.random.normal(0, np.abs(0.5*v))
+    def _noise_sensor(self,state):
+        y,v =state
+        return np.random.normal(y, np.abs(0.5*v))
 
     def _noise_dynamics(self,v):
         """
@@ -412,10 +413,8 @@ class NumberLineEnvironment(Environment):
     def state_estimation(self):
         pass
     
-    def update_belief(self,belief):
-        # bel(t)-
-        # bel(t+1)-
-        # bel(t)+
+    def update_state(self,belief):
+        # particle filter does't have belief 
         pass
     
     def on_action_belief_update(self,action,previous_state):
