@@ -448,8 +448,7 @@ class NumberLineEnvironment(Environment):
             particles[0][ctr] = next_state   
         # TODO add     
         ## for m = 1 to M do
-        # 9: draw i with probability ∝ w[i]
-        # t
+        # 9: draw i with probability ∝ w[i]t
         # 10: add x[i]
         # t to Xt
         
