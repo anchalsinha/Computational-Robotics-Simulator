@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 
 from .base_environment import Environment
@@ -152,3 +153,40 @@ class GridworldEnvironment(Environment):
 
     def get_r(self, state, action, next_state):
         return self.R[state][action][next_state]
+    
+    def get_o(self, state):
+        obs = self.O[state]
+        return np.random.choice(obs[:,0], p=obs[:,1])
+
+    # returns P(z|s)
+    def observation_prob(self, observation, state):
+        state_obs = self.O[state]
+
+        for obs in state_obs:
+            if obs[0] == observation:
+                return obs[1]
+        return 0
+
+    def bayes_filter(self, belief, data, data_type):
+        n = 0
+
+        new_belief = defaultdict(int)
+
+        if data_type == "observation":
+            # observation update
+            for state in self.S:
+                # Bel'(x) = P(z|x) * Bel(x)
+                new_belief[state] = self.observation_prob(data, state) * belief[state]
+                n += new_belief[state]
+
+            # normalize
+            for state in self.S:
+                new_belief[state] /= n 
+        else:
+            # action update
+            for next_state in self.S:
+                # Bel'(x) = sum over x' (P(x|u,x') * Bel(x'))
+                new_belief[next_state] = sum([self.get_p(state, data, next_state)*(belief[state]) 
+                                         for state in self.S])
+        
+        return new_belief
