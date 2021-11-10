@@ -29,6 +29,7 @@ class NumberLineEnvironment(Environment):
         self.position = self.y_max  # position
         self.velocity = 0.0  # velocity
         self.time = 0
+        self.update_state()
 
         self.target_state = target_state
         
@@ -36,7 +37,7 @@ class NumberLineEnvironment(Environment):
         if self.planning_type != 'rrt':
             self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
             self.action_space_discretization()
-            self.update_state()
+            
             
 
         self.state_space_discretization(self.resolution) # sets the position_space and velocity_space
@@ -151,7 +152,8 @@ class NumberLineEnvironment(Environment):
 
     def _next_position(self,state):
         retval = state[0] + state[1]*1 #time step one unit (u+vt)
-        return self._check_bounds(retval,self.y_max)
+        # return self._check_bounds(retval,self.y_max)
+        return retval
 
     def _next_velocity(self,state,action):
         """
@@ -161,7 +163,8 @@ class NumberLineEnvironment(Environment):
             - Checks bounds
         """
         next_velocity = state[1] + (1 / self.m) * self._net_force(action) + self._noise_dynamics(state[1])
-        return self._check_bounds(next_velocity,self.v_max)
+        # return self._check_bounds(next_velocity,self.v_max)
+        return next_velocity
 
     def _next_state(self, state, action):
         has_crashed = random.uniform(0, 1) < ((np.abs(state[1])) * self.p_c)/self.v_max
@@ -408,31 +411,33 @@ class NumberLineEnvironment(Environment):
     ## STATE ESTIMATION ----------------------------------------------------------------------
     ## ---------------------------------------------------------------------------------------
     def transition_probability_continuous(self,next_state,curr_state,action):
-        self.prob_of_crashing(curr_state)* self._noise_dynamics(curr_state)
+        return self.prob_of_crashing(curr_state)* self._noise_dynamics(curr_state)
 
     def state_estimation(self):
         pass
     
-    def update_state(self,belief):
-        # particle filter does't have belief 
-        pass
-    
-    def on_action_belief_update(self,action,previous_state):
-        pass
+    def update_state(self,state):
+        # particle filter does't have belief
+        # run state dynamics 
+        return self._next_state(state)
 
-    def particle_filter(self):
+    def particle_filter(self,num_of_particles):
         # sample a number of points
-        np.randomd
+        initial_state = (self.y_max,self.v_max)
+        for n in range(num_of_particles):
+        
+            particles = [[],[]]
         # pr(s`|s,a)
         
         pass
 
     def update_weights(self,particles):
-        # particle : [state,weight]
-        for particle in particles:
-            state = particle[0]
-            weight_old = particle[1]
-            weight_new =  self.sensor_model(state)*weight_old
+        # particle : [[states],[weights]] both lists have the same size 
+        weight_sum = particles[1].sum()
+        for ctr,state in enumerate(particles[0]):
+            weight_old = particles[1][ctr]  
+            particles[1][ctr] =  (self.sensor_model(state)*weight_old)/weight_sum  #update the weight and normalize
+            
 
         
 
